@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📚 English Vocabulary</title>
+<style>
+:root {
+  --bg: #f0f2f5; --card: #fff; --text: #1a1a1a; --sub: #777;
+  --accent: #3b82f6; --accent-light: #eff6ff; --border: #e5e7eb;
+  --pos-bg: #3b82f6; --pos-text: #fff; --note: #9ca3af;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
+header { background: #fff; border-bottom: 1px solid var(--border); padding: 14px 20px 10px; position: sticky; top: 0; z-index: 200; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+.hrow1 { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+h1 { font-size: 1.3rem; font-weight: 800; }
+.badge { background: var(--accent-light); color: var(--accent); font-size: .78rem; font-weight: 600; padding: 2px 10px; border-radius: 20px; }
+#search { width: 100%; padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: .95rem; outline: none; transition: border-color .2s; }
+#search:focus { border-color: var(--accent); }
+nav { background: #fff; border-bottom: 1px solid var(--border); padding: 8px 20px; display: flex; flex-wrap: wrap; gap: 4px; position: sticky; top: 93px; z-index: 199; }
+nav a { display: inline-flex; align-items: center; justify-content: center; width: 27px; height: 27px; border-radius: 6px; font-size: .8rem; font-weight: 700; color: var(--accent); background: var(--accent-light); text-decoration: none; transition: all .15s; }
+nav a:hover { background: var(--accent); color: #fff; }
+main { max-width: 780px; margin: 0 auto; padding: 20px 14px 40px; }
+.section { margin-bottom: 28px; }
+.sec-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.letter-box { width: 34px; height: 34px; background: var(--accent); color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; flex-shrink: 0; }
+.sec-count { font-size: .8rem; color: var(--sub); }
+.entry { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; margin-bottom: 10px; transition: box-shadow .2s; }
+.entry:hover { box-shadow: 0 4px 14px rgba(0,0,0,.08); }
+.erow1 { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.word { font-size: 1.1rem; font-weight: 700; }
+.word a { color: inherit; text-decoration: none; }
+.word a:hover { color: var(--accent); }
+.ipa { font-size: .88rem; color: var(--sub); font-family: serif; }
+.pos { font-size: .75rem; background: var(--pos-bg); color: var(--pos-text); padding: 2px 8px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
+.cam-link { font-size: .8rem; color: var(--accent); text-decoration: none; opacity: .7; margin-left: auto; white-space: nowrap; }
+.cam-link:hover { opacity: 1; }
+.meaning { font-size: .92rem; font-weight: 500; color: #374151; margin: 6px 0 10px; }
+.examples { list-style: none; }
+.ex-item { display: flex; align-items: flex-start; gap: 7px; padding: 5px 0; border-top: 1px solid var(--border); font-size: .9rem; color: #4b5563; }
+.ex-item:first-child { border-top: none; }
+.ex-dot { color: var(--accent); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+.ex-text { flex: 1; }
+.sp-btn { background: none; border: 1px solid var(--border); border-radius: 5px; cursor: pointer; font-size: .75rem; padding: 2px 5px; color: var(--sub); flex-shrink: 0; transition: all .15s; line-height: 1.4; }
+.sp-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+.sp-btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.note { font-size: .82rem; color: var(--note); font-style: italic; margin-top: 8px; padding-top: 7px; border-top: 1px dashed var(--border); }
+.empty { text-align: center; color: var(--sub); padding: 60px 20px; font-size: 1.05rem; }
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow1"><h1>📚 English Vocabulary</h1><span class="badge" id="cnt"></span></div>
+  <input id="search" type="text" placeholder="단어 검색… (영어 또는 한국어)">
+</header>
+<nav id="anav"></nav>
+<main id="main"></main>
+
+<script>
+const C = 'https://dictionary.cambridge.org/dictionary/english/';
+const MW = 'https://www.merriam-webster.com/dictionary/';
+
+const V = [
+  // A
+  {w:"adjust",i:"/əˈdʒʌst/",p:"v. [I/T]",m:"조정하다, 맞추다; 적응하다",c:"adjust",
+   e:["It took me a while to adjust to the new schedule.","You can adjust the seat to your height."]},
+  {w:"adjourn",i:"/əˈdʒɜːrn/",p:"v. [I/T]",m:"(회의·재판을) 휴정하다, 중단하다, 연기하다",c:"adjourn",
+   e:["The court will adjourn until tomorrow morning.","The meeting was adjourned due to lack of quorum."]},
+  {w:"appropriate",i:"/əˈproʊpriɪt/",p:"adj.",m:"적절한, 알맞은",c:"appropriate",
+   e:["That kind of language is not appropriate in the classroom.","Make sure you wear appropriate clothing for the interview."]},
+  // B
+  {w:"benefactor",i:"/ˈbɛnɪfæktər/",p:"n. [C]",m:"후원자, 은인",c:"benefactor",
+   e:["An anonymous benefactor donated a million dollars to the school.","Without the benefactor's support, the project would never have happened."]},
+  {w:"bailiff",i:"/ˈbeɪlɪf/",p:"n. [C]",m:"법원 집행관 (법정 질서 유지 및 판사 보좌)",c:"bailiff",
+   e:["The bailiff asked everyone to rise as the judge entered.","The bailiff escorted the defendant out of the courtroom."]},
+  {w:"blood vessel",i:"/blʌd ˈvɛs.əl/",p:"n. [C]",m:"혈관",c:"blood-vessel",
+   e:["A burst blood vessel in his eye made it look red.","Exercise strengthens the heart and blood vessels."]},
+  {w:"bleachers",i:"/ˈbliːtʃərz/",p:"n. [plural]",m:"(지붕 없는 야외) 관중석, 스탠드 — 항상 복수형",c:"bleachers",
+   e:["We sat in the bleachers and watched the whole game.","The bleachers were packed with cheering fans."]},
+  {w:"bogart",i:"/ˈboʊɡɑːrt/",p:"v. [T]",m:"(속어) 독차지하다, 혼자 다 쓰다",u:MW+"bogart",
+   e:["Stop bogarting the remote — let someone else choose.","Don't bogart all the snacks; leave some for the rest of us."]},
+  {w:"bully",i:"/ˈbʊli/",p:"n. [C]",m:"괴롭히는 사람, 불량배",c:"bully",
+   e:["He was a bully who terrorized the younger kids at school.","Don't let the bullies win — stand up for yourself."]},
+  {w:"bust",i:"/bʌst/",p:"v. [T]",m:"부수다; (속어) 체포하다; 망하게 하다",c:"bust",n:"cf. go bust (파산하다)",
+   e:["He busted the door open with his shoulder.","The police busted him for drug possession."]},
+  // C
+  {w:"call sb names",p:"phrv. [T]",m:"~에게 욕하다, 험한 말을 하다",c:"call-someone-names",
+   e:["Stop calling me names — it's not funny.","The kids were calling her names on the playground."]},
+  {w:"charade",i:"/ʃəˈreɪd/",p:"n. [C]",m:"가식, 위장, 눈속임; (복수형) 몸짓 수수께끼 게임",c:"charade",
+   e:["This whole meeting was just a charade — the decision was already made.","Their happy marriage was a complete charade."]},
+  {w:"chaperone",i:"/ˈʃæpərəʊn/",p:"n. [C]",m:"(행사에서 청소년을 감독하는) 보호자, 인솔 교사",c:"chaperone",
+   e:["Parents volunteered as chaperones for the school trip.","The dance required at least three chaperones to be present."]},
+  {w:"circumstance",i:"/ˈsɜːrkəmstæns/",p:"n. [C]",m:"상황, 사정, 환경 — 주로 복수형 circumstances",c:"circumstance",
+   e:["Under the circumstances, we had no choice but to leave.","The circumstances of his death remain unclear."]},
+  {w:"comeuppance",i:"/kʌmˈʌpəns/",p:"n. [C/U]",m:"응당한 벌, 자업자득, 인과응보",c:"comeuppance",
+   e:["He finally got his comeuppance after years of cheating people.","She deserved her comeuppance and everyone knew it."]},
+  {w:"complicated",i:"/ˈkɒmplɪkeɪtɪd/",p:"adj.",m:"복잡한, 뒤얽힌",c:"complicated",
+   e:["The relationship between them is very complicated.","This form is way too complicated — can you simplify it?"]},
+  {w:"conscientious",i:"/ˌkɒnʃiˈɛnʃəs/",p:"adj.",m:"성실한, 양심적인, 꼼꼼한",c:"conscientious",
+   e:["She's the most conscientious student in the class.","He was conscientious about double-checking every detail."]},
+  {w:"contestant",i:"/kənˈtɛstənt/",p:"n. [C]",m:"(대회) 참가자, 경쟁자",c:"contestant",
+   e:["Each contestant had two minutes to answer the question.","She was the youngest contestant in the history of the show."]},
+  {w:"contraband",i:"/ˈkɒntrəbænd/",p:"n. [U]",m:"밀수품, 금지 물품",c:"contraband",
+   e:["Customs officers found contraband hidden in the luggage.","Cigarettes are the most common form of contraband seized at the border."]},
+  {w:"custody",i:"/ˈkʌstədi/",p:"n. [U]",m:"구금, 유치; (이혼 후) 양육권",c:"custody",
+   e:["The suspect was taken into custody at the airport.","She was awarded full custody of the children after the divorce."]},
+  // D
+  {w:"detention",i:"/dɪˈtɛnʃən/",p:"n. [C/U]",m:"방과 후 벌(학교); 구금, 억류",c:"detention",
+   e:["He got detention for throwing paper in class.","The school's detention policy was stricter than ever."]},
+  {w:"diarrhea",i:"/ˌdaɪəˈrɪə/",p:"n. [U]",m:"설사",c:"diarrhea",
+   e:["I've had diarrhea all morning — must have been something I ate.","Drinking contaminated water can cause diarrhea."]},
+  {w:"disguise",i:"/dɪsˈɡaɪz/",p:"n. [C/U]",m:"변장, 위장",c:"disguise",
+   e:["He wore a disguise so no one would recognize him.","She showed up to the party in a convincing disguise."]},
+  {w:"duct",i:"/dʌkt/",p:"n. [C]",m:"도관, 덕트; (해부) 관",c:"duct",n:"cf. duct tape (덕트 테이프)",
+   e:["The air duct needs to be cleaned at least once a year.","Tears travel through a small duct to reach the eye."]},
+  // E
+  {w:"embarrass",i:"/ɪmˈbærəs/",p:"v. [T]",m:"당황하게 하다, 창피하게 하다",c:"embarrass",
+   e:["Please don't embarrass me in front of my friends.","She was embarrassed by his rude behavior at the dinner table."]},
+  {w:"enlighten",i:"/ɪnˈlaɪtən/",p:"v. [T]",m:"깨우치다, 계몽하다, 이해시키다",c:"enlighten",
+   e:["Could you enlighten me on how this system works?","The documentary enlightened millions of viewers about climate change."]},
+  {w:"ethnicity",i:"/ɛθˈnɪsɪti/",p:"n. [C/U]",m:"민족성, 인종적 배경",c:"ethnicity",
+   e:["The survey asks respondents to identify their ethnicity.","People of all ethnicities were welcome at the festival."]},
+  // F
+  {w:"fart",i:"/fɑːrt/",p:"v. [I]",m:"방귀를 뀌다",c:"fart",n:"cf. Who cut the cheese?",
+   e:["Did you fart? Not me!"]},
+  {w:"federal offence / federal crime",p:"n. [C]",m:"연방 범죄 (주를 넘어서는 중대 범죄)",
+   e:["Crossing state lines with stolen goods is a federal offence.","Threatening a federal officer is considered a federal crime."]},
+  {w:"fed up",i:"/fɛd ʌp/",p:"adj.",m:"진저리난, 신물난, 지긋지긋한 — 항상 서술적으로만",c:"fed-up",
+   e:["I'm totally fed up with his excuses.","She was fed up and decided to quit."]},
+  {w:"feedback",i:"/ˈfiːdbæk/",p:"n. [U]",m:"피드백, 의견, 반응",c:"feedback",
+   e:["Could you give me some feedback on my presentation?","The feedback from customers has been mostly positive."]},
+  {w:"flawed",i:"/flɔːd/",p:"adj.",m:"결함이 있는, 흠이 있는",c:"flawed",
+   e:["The plan was deeply flawed from the start.","Every human being is flawed in some way."]},
+  {w:"flop",i:"/flɒp/",p:"n. [C]",m:"실패작, 완전히 망한 것",c:"flop",
+   e:["The movie was a total flop at the box office.","His first business venture was a flop, but he learned from it."]},
+  {w:"flunk",i:"/flʌŋk/",p:"v. [I/T]",m:"(시험·과목에) 떨어지다, 낙제하다",c:"flunk",
+   e:["He flunked his driving test three times.","If you flunk this exam, you'll have to repeat the year."]},
+  {w:"flush",i:"/flʌʃ/",p:"v. [I/T]",m:"(변기를) 내리다; 얼굴이 붉어지다; (물로) 씻어내다",c:"flush",n:"cf. flush sth down (변기에 내려버리다)",
+   e:["Don't forget to flush the toilet.","She flushed with embarrassment when he called her name."]},
+  {w:"frame",i:"/freɪm/",p:"v. [T]",m:"누명을 씌우다; 액자에 넣다; 구성하다",c:"frame",
+   e:["He claimed he was framed by his own partner.","They tried to frame her for the robbery she didn't commit."]},
+  {w:"freaking",i:"/ˈfriːkɪŋ/",p:"adj. / adv.",m:"(속어) 빌어먹을, 진짜, 엄청 — fucking의 완곡어",c:"freaking",
+   e:["Where are my freaking keys?!","That was freaking amazing."]},
+  {w:"freeloader",i:"/ˈfriːloʊdər/",p:"n. [C]",m:"무임승차자, 남에게 기대어 사는 사람",c:"freeloader",
+   e:["Don't be a freeloader — pay your share of the rent.","He was a freeloader who never contributed anything to the group."]},
+  // G
+  {w:"get to sb",p:"phrv. [T]",m:"~를 짜증나게 하다, ~에게 영향을 미치다",c:"get-to",
+   e:["Don't let their comments get to you.","The constant noise was really starting to get to me."]},
+  {w:"gig",i:"/ɡɪɡ/",p:"n. [C]",m:"공연; 단기 일자리, 긱(gig)",c:"gig",
+   e:["The band has a gig at the local bar on Friday night.","He earns extra money through gig work like food delivery."]},
+  {w:"give sb a piece of your mind",p:"phr.",m:"~에게 솔직하게 불만을 털어놓다, 한소리 하다",
+   e:["I'm going to give that manager a piece of my mind.","She finally gave him a piece of her mind after years of putting up with his attitude."]},
+  {w:"gizzard",i:"/ˈɡɪzərd/",p:"n. [C]",m:"(새·닭의) 모래주머니; (비유) 뱃속",c:"gizzard",n:"cf. stick in one's gizzard (비위에 거슬리다)",
+   e:["Chicken gizzards are considered a delicacy in many cultures."]},
+  {w:"go on with",p:"phrv. [T]",m:"~을 계속하다",c:"go-on-with",
+   e:["Let's go on with the meeting — we're already behind.","She took a deep breath and went on with her presentation."]},
+  {w:"ground",i:"/ɡraʊnd/",p:"v. [T]",m:"(아이를) 외출 금지시키다; (비행기를) 결항·운항 정지시키다",c:"ground",
+   e:["I'm grounded for a week because I came home late.","All flights were grounded due to the storm."]},
+  {w:"gutter",i:"/ˈɡʌtər/",p:"n. [C]",m:"도랑, 하수구; 처마 홈통; (비유) 밑바닥",c:"gutter",n:"cf. gutter press (황색 언론)",
+   e:["The rain overflowed the gutter and flooded the sidewalk.","He grew up in the gutter but worked his way to the top."]},
+  // H
+  {w:"haggard",i:"/ˈhæɡərd/",p:"adj.",m:"초췌한, 핼쑥한, 야윈",c:"haggard",
+   e:["He looked haggard after weeks without sleep.","Her haggard face showed how exhausted she was."]},
+  {w:"half-wit",i:"/ˈhæfwɪt/",p:"n. [C]",m:"멍청이, 바보",c:"half-wit",
+   e:["Only a half-wit would fall for that scam.","Don't be such a half-wit — think before you act."]},
+  {w:"harass",i:"/həˈræs/",p:"v. [T]",m:"괴롭히다, 희롱하다, 집요하게 시달리게 하다",c:"harass",
+   e:["She filed a complaint after being harassed at work.","Stop harassing me with phone calls at midnight."]},
+  {w:"hemorrhoids",i:"/ˈhɛmərɔɪdz/",p:"n. [plural]",m:"치질, 치핵",c:"hemorrhoids",
+   e:["He was too embarrassed to tell the doctor about his hemorrhoids.","Sitting for long periods can increase the risk of hemorrhoids."]},
+  {w:"hick",i:"/hɪk/",p:"n. [C]",m:"촌뜨기, 시골뜨기 — 경멸적 표현",c:"hick",
+   e:["He called them hicks just because they were from a small town.","Don't be such a hick — you've never seen a subway before?"]},
+  {w:"hooked",i:"/hʊkt/",p:"adj.",m:"중독된, 푹 빠진",c:"hooked",
+   e:["I'm totally hooked on this new series.","He got hooked on coffee in college and never quit."]},
+  {w:"humiliate",i:"/hjuːˈmɪlieɪt/",p:"v. [T]",m:"굴욕감을 주다, 창피를 주다",c:"humiliate",
+   e:["He humiliated her in front of the entire class.","She felt humiliated when they laughed at her mistake."]},
+  {w:"hump",i:"/hʌmp/",p:"v. [T]",m:"(비속어) 성교하다; (짐을) 힘들게 나르다",c:"hump",n:"cf. over the hump (고비를 넘기다)",
+   e:["We had to hump all the furniture up three flights of stairs."]},
+  // I
+  {w:"immature",i:"/ˌɪməˈtʃʊər/",p:"adj.",m:"미성숙한, 철없는",c:"immature",
+   e:["He forgave his son's immature behavior.","While the animals are still immature, they do not breed."]},
+  {w:"incident",i:"/ˈɪnsɪdənt/",p:"n. [C]",m:"사건, 사고, 불상사",c:"incident",
+   e:["The incident was caught on CCTV and went viral.","Police are investigating the incident that occurred last night."]},
+  {w:"ingrate",i:"/ˈɪŋɡreɪt/",p:"n. [C]",m:"배은망덕한 사람, 은혜를 모르는 사람",c:"ingrate",
+   e:["He's such an ingrate — we did everything for him and he never even said thank you.","Don't be an ingrate; show some appreciation."]},
+  // K
+  {w:"keep an eye out for sth/sb",p:"phr.",m:"~을 주의해서 살피다, 눈여겨보다",
+   e:["Keep an eye out for any suspicious activity.","Can you keep an eye out for my wallet? I think I left it here."]},
+  // L
+  {w:"liking",i:"/ˈlaɪkɪŋ/",p:"n. [C/U]",m:"좋아함, 기호, 취향",c:"liking",
+   e:["He developed a liking for spicy food while living abroad.","Is everything to your liking?"]},
+  {w:"loaded",i:"/ˈloʊdɪd/",p:"adj.",m:"(속어) 부자인; 술에 잔뜩 취한; (질문이) 함정이 있는",c:"loaded",n:"cf. a loaded question (함정 질문)",
+   e:["Her family is loaded — they own three houses.","He was completely loaded at the party last night."]},
+  {w:"lump",i:"/lʌmp/",p:"n. [C]",m:"덩어리; 혹, 멍울",c:"lump",
+   e:["She found a lump in her breast and went to see a doctor.","Add a lump of sugar to your tea if it's too bitter."]},
+  {w:"lunatic",i:"/ˈluːnətɪk/",p:"n. [C]",m:"미치광이, 정신나간 사람 — 비격식·경멸적",c:"lunatic",
+   e:["You'd have to be a lunatic to drive in this weather.","Some lunatic cut in front of me on the highway."]},
+  // M
+  {w:"maintain",i:"/meɪnˈteɪn/",p:"v. [T]",m:"유지하다; 관리하다; 주장하다",c:"maintain",
+   e:["It's hard to maintain a healthy diet when you're busy.","The company maintains that no safety violations occurred."]},
+  {w:"make out",p:"phrv. [I/T]",m:"키스하다, 애무하다; 이해하다; 잘 해나가다",c:"make-out",
+   e:["They were making out in the back of the movie theater.","I couldn't make out what he was saying through the noise.","How did she make out on her first day at work?"]},
+  {w:"molest",i:"/məˈlɛst/",p:"v. [T]",m:"(성적으로) 추행하다, 성희롱하다",c:"molest",
+   e:["He was arrested for molesting a minor.","The victim finally came forward years after being molested."]},
+  // N
+  {w:"nail file",p:"n. [C]",m:"손톱줄, 네일 파일",c:"nail-file",
+   e:["She carried a nail file in her purse at all times.","He smoothed the rough edge with a nail file."]},
+  {w:"naughty",i:"/ˈnɔːti/",p:"adj.",m:"버릇없는, 말 안 듣는",c:"naughty",
+   e:["The naughty boy pulled his sister's hair.","You've been very naughty — go to your room!"]},
+  {w:"nerdo",i:"/ˈnɜːrdoʊ/",p:"n. [C]",m:"(속어) 공부벌레, 괴짜 — nerd의 강조 슬랭",
+   e:["He was the class nerdo who aced every test without trying.","Come on, don't be such a nerdo — come to the party!"]},
+  // O
+  {w:"obsessed",i:"/əbˈsɛst/",p:"adj.",m:"집착하는, ~에 사로잡힌",c:"obsessed",
+   e:["She's completely obsessed with true crime podcasts.","He's so obsessed with work that he never takes a day off."]},
+  {w:"outlet",i:"/ˈaʊtlɛt/",p:"n. [C]",m:"콘센트; 배출구; (감정의) 발산구; 판매점",c:"outlet",
+   e:["Plug the charger into the outlet over there.","Exercise is a great outlet for stress."]},
+  // P
+  {w:"pass away / pass on",p:"phrv. [I]",m:"돌아가시다, 세상을 떠나다 — die의 완곡 표현",c:"pass-away",
+   e:["His grandfather passed away peacefully in his sleep.","She passed on before she could meet her grandchildren."]},
+  {w:"pass out",p:"phrv. [I]",m:"기절하다, 의식을 잃다",c:"pass-out",
+   e:["She passed out from the heat and had to be carried inside.","He nearly passed out when he saw the bill."]},
+  {w:"pedestrian",i:"/pəˈdɛstriən/",p:"n. [C]",m:"보행자",c:"pedestrian",
+   e:["The driver failed to stop for a pedestrian at the crosswalk.","Several pedestrians were injured in the accident."]},
+  {w:"pervert",i:"/ˈpɜːrvɜːrt/",p:"n. [C]",m:"변태, 성도착자",c:"pervert",
+   e:["Get away from me, you pervert!","The police arrested the pervert who had been stalking her."]},
+  {w:"pick sth/sb out",p:"phrv. [T]",m:"골라내다; 식별하다, 알아보다",c:"pick-out",
+   e:["Can you pick out the person you saw from this lineup?","She picked out the perfect dress for the occasion."]},
+  {w:"plan on v+ing sth",p:"phr.",m:"~할 계획이다, ~하려고 하다",
+   e:["Are you planning on coming to the party tonight?","I'm not planning on staying long — just a quick visit."]},
+  {w:"pork rinds",p:"n. [plural]",m:"돼지껍데기 튀김 (바삭한 스낵)",c:"pork-rind",
+   e:["He munched on pork rinds while watching the game.","Pork rinds are surprisingly popular as a low-carb snack."]},
+  {w:"potty mouth",i:"/ˈpɒti maʊθ/",p:"n. [C]",m:"입이 거친 사람, 욕쟁이",c:"potty-mouth",
+   e:["Don't be such a potty mouth in front of the kids.","My little brother is a total potty mouth — he learned all the bad words from TV."]},
+  {w:"property",i:"/ˈprɒpərti/",p:"n. [C/U]",m:"재산, 부동산; 건물; (사물의) 특성",c:"property",
+   e:["No trespassing — private property.","The chemical properties of water make it essential for life."]},
+  {w:"protocol",i:"/ˈproʊtəkɒl/",p:"n. [C/U]",m:"절차, 규정, 프로토콜; 외교 의전",c:"protocol",
+   e:["There's a strict protocol for handling confidential documents.","Following proper protocol could save lives in an emergency."]},
+  {w:"prowl",i:"/praʊl/",p:"v. [I/T]",m:"(먹이를 찾아) 어슬렁거리다, 배회하다",c:"prowl",n:"cf. on the prowl (먹잇감을 찾아 돌아다니는)",
+   e:["A lion was prowling the edge of the camp at night.","He was prowling the streets looking for trouble."]},
+  {w:"put up with sth/sb",p:"phrv. [T]",m:"~을 참다, 견디다, 감수하다",c:"put-up-with",
+   e:["I can't put up with this noise any longer.","She put up with his bad habits for years before finally leaving."]},
+  // R
+  {w:"ram",i:"/ræm/",p:"v. [T]",m:"들이받다, 충돌시키다; 억지로 밀어 넣다",c:"ram",
+   e:["The stolen car rammed into the police vehicle.","He rammed the post into the ground with a hammer."]},
+  {w:"reflex",i:"/ˈriːflɛks/",p:"n. [C]",m:"반사작용, 반사신경",c:"reflex",
+   e:["The doctor tested his reflexes with a small hammer.","A good goalkeeper needs lightning-fast reflexes."]},
+  {w:"release",i:"/rɪˈliːs/",p:"v. [T]",m:"석방하다; (음반·영화를) 발매·공개하다; 방출하다",c:"release",
+   e:["The prisoner was released after serving five years.","The band is set to release their new album next month."]},
+  {w:"renounce",i:"/rɪˈnaʊns/",p:"v. [T]",m:"(공식적으로) 포기하다, 철회하다; 부인하다",c:"renounce",
+   e:["He renounced his citizenship to avoid paying taxes.","She renounced her claim to the throne."]},
+  {w:"ridicule",i:"/ˈrɪdɪkjuːl/",p:"v. [T]",m:"조롱하다, 비웃다",c:"ridicule",
+   e:["They ridiculed his idea without even hearing him out.","She was ridiculed for speaking up in class."]},
+  {w:"rip on sb",p:"phrv. [T]",m:"~를 맹비난하다, 깎아내리다, 험담하다",
+   e:["He spent the whole lunch break ripping on his boss.","Why are you always ripping on her? She's done nothing wrong."]},
+  {w:"ripe",i:"/raɪp/",p:"adj.",m:"(과일이) 익은, 무르익은; 준비된",c:"ripe",
+   e:["These bananas aren't ripe yet — wait another day.","The time is ripe for a change in leadership."]},
+  // S
+  {w:"saturate",i:"/ˈsætʃəreɪt/",p:"v. [T]",m:"흠뻑 적시다; 포화시키다",c:"saturate",
+   e:["The rain saturated the ground within minutes.","The market is saturated with cheap imitations of the product."]},
+  {w:"screw",i:"/skruː/",p:"v. [T]",m:"나사로 조이다; (속어) 망치다, 속이다; (비속어) 성교하다",c:"screw",n:"cf. Screw you! / Screw it, let's just go home.",
+   e:["Screw the lid on tightly before shaking the bottle.","We got screwed on that deal — they charged us double."]},
+  {w:"shenanigans",i:"/ʃɪˈnænɪɡənz/",p:"n. [plural]",m:"장난, 속임수, 요상한 짓 — 항상 복수형",c:"shenanigans",
+   e:["I'm not putting up with any more of your shenanigans.","The company's financial shenanigans finally caught up with them."]},
+  {w:"shot",i:"/ʃɒt/",p:"n. [C]",m:"주사; 시도, 기회; 장면; 총성; (술) 한 잔",c:"shot",n:"cf. long shot (가능성이 낮은 시도), big shot (거물)",
+   e:["The nurse gave me a flu shot.","Give it your best shot — you've got nothing to lose."]},
+  {w:"slaughter",i:"/ˈslɔːtər/",p:"v. [T]",m:"도살하다; 학살하다; (속어) 완전히 이기다",c:"slaughter",
+   e:["Thousands of cattle are slaughtered every day.","Our team got absolutely slaughtered — it was 8 to 0."]},
+  {w:"sling (n.)",i:"/slɪŋ/",p:"n. [C]",m:"팔걸이 붕대; 슬링백; 투석기",c:"sling",
+   e:["His arm was in a sling for six weeks after the fracture.","She carried her baby in a sling."]},
+  {w:"sling (v.)",i:"/slɪŋ/",p:"v. [T]",m:"(아무렇게나) 던지다, 걸다",c:"sling",
+   e:["He slung his bag over his shoulder and left.","Stop slinging mud at each other and just talk it out."]},
+  {w:"smack",i:"/smæk/",p:"v. [T]",m:"철썩 때리다, 찰싹 치다",c:"smack",n:"cf. smack in the middle (딱 한가운데에)",
+   e:["She smacked him on the back of the head.","He smacked the ball right out of the park."]},
+  {w:"smug",i:"/smʌɡ/",p:"adj.",m:"잘난 체하는, 자기만족에 찬",c:"smug",
+   e:["He had a smug grin on his face after winning the argument.","Don't be so smug — you just got lucky."]},
+  {w:"sneak",i:"/sniːk/",p:"v. [I/T]",m:"몰래 움직이다, 살금살금 가다; 슬쩍 가져가다",c:"sneak",
+   e:["He sneaked out of the house after midnight.","She sneaked a piece of chocolate from the jar."]},
+  {w:"sole",i:"/soʊl/",p:"adj.",m:"유일한, 단독의",c:"sole",
+   e:["She was the sole survivor of the crash.","He is the sole owner of the company."]},
+  {w:"spatter",i:"/ˈspætər/",p:"v. [I/T]",m:"(액체가) 튀기다 — splatter보다 작은 방울이 넓게",c:"spatter",
+   e:["Blood spattered across the wall.","The bus spattered mud all over my coat as it drove past."]},
+  {w:"spearmint",i:"/ˈspɪərmɪnt/",p:"n. [U]",m:"스피아민트 (상쾌한 향의 박하)",c:"spearmint",
+   e:["She chewed a piece of spearmint gum to freshen her breath.","The cocktail was garnished with a sprig of spearmint."]},
+  {w:"spelling bee",i:"/ˈspɛlɪŋ biː/",p:"n. [C]",m:"철자 맞추기 대회",c:"spelling-bee",
+   e:["She won the national spelling bee at the age of ten.","I got knocked out in the first round of the spelling bee."]},
+  {w:"splatter",i:"/ˈsplætər/",p:"v. [I/T]",m:"(액체가) 튀다, 흩뿌리다",c:"splatter",
+   e:["The paint splattered all over the floor.","He splattered ketchup on his shirt."]},
+  {w:"spook",i:"/spuːk/",p:"n. [C]",m:"귀신, 유령; (속어) 스파이, 정보요원",c:"spook",
+   e:["The kids were convinced the old house was full of spooks.","Word got out that he was a spook working for the CIA."]},
+  {w:"squirm",i:"/skwɜːrm/",p:"v. [I]",m:"꿈틀거리다, 몸부림치다; 안절부절못하다",c:"squirm",
+   e:["The worm squirmed in his hand.","He squirmed in his seat as they read out his test score."]},
+  {w:"sting",i:"/stɪŋ/",p:"v. [I/T]",m:"쏘다, 찌르다; 따끔거리다; (속어) 속여서 돈을 뜯다",c:"sting",n:"cf. sting operation (함정 수사)",
+   e:["A bee stung me on the arm.","The cut stings when you put alcohol on it."]},
+  {w:"stomach flu",i:"/ˈstʌmək fluː/",p:"n. [U]",m:"장염, 위장 독감",c:"stomach-flu",
+   e:["I was out sick all week with the stomach flu.","The stomach flu spread quickly through the school."]},
+  {w:"suffer",i:"/ˈsʌfər/",p:"v. [I/T]",m:"고통받다, 시달리다; (손해 등을) 입다",c:"suffer",
+   e:["She suffers from chronic migraines.","The team suffered a crushing defeat."]},
+  {w:"supervise",i:"/ˈsuːpərvaɪz/",p:"v. [T]",m:"감독하다, 지도하다, 관리하다",c:"supervise",
+   e:["It's your job to supervise the interns this summer.","Children should be supervised at all times near water."]},
+  {w:"surveillance",i:"/sərˈveɪləns/",p:"n. [U]",m:"감시, 사찰",c:"surveillance",
+   e:["The suspect was placed under surveillance for two weeks.","Security cameras provide 24-hour surveillance of the building."]},
+  {w:"swell",i:"/swɛl/",p:"adj.",m:"(구어, 다소 구식) 멋진, 훌륭한, 최고의",c:"swell",
+   e:["Thanks for dinner — everything was just swell!","He's a swell guy; you'll like him right away."]},
+  // T
+  {w:"taint",i:"/teɪnt/",p:"v. [T]",m:"오염시키다, 더럽히다; (명예를) 훼손하다",c:"taint",
+   e:["The scandal tainted his reputation permanently.","The water supply was tainted with chemicals."]},
+  {w:"take sth/sb for granted",p:"phr.",m:"~을 당연하게 여기다, ~의 소중함을 모르다",c:"take-for-granted",
+   e:["Don't take your health for granted until it's gone.","He took her for granted and she eventually left."]},
+  {w:"take the stand",p:"phr.",m:"증언석에 서다, 증언하다",
+   e:["The defendant refused to take the stand in his own defence.","When she took the stand, the courtroom fell silent."]},
+  {w:"take up",p:"phrv. [T]",m:"(시간·공간을) 차지하다; (취미·활동을) 시작하다",c:"take-up",
+   e:["This project is taking up all of my time.","She took up painting after she retired."]},
+  {w:"tend to",p:"phrv. [I]",m:"~하는 경향이 있다, ~하기 쉽다",c:"tend-to",
+   e:["I tend to wake up early on weekends.","People tend to overestimate how much others notice them."]},
+  {w:"tend to sb/sth",p:"phrv. [T]",m:"~을 돌보다, 보살피다",c:"tend",
+   e:["The nurse tended to the patients throughout the night.","He tended to the garden every morning before work."]},
+  {w:"territory",i:"/ˈtɛrɪtɔːri/",p:"n. [C/U]",m:"영역, 지역, 구역; (비유) 영역, 분야",c:"territory",
+   e:["The wolves marked their territory by scent.","Dealing with angry customers comes with the territory."]},
+  {w:"thermostat",i:"/ˈθɜːrməstæt/",p:"n. [C]",m:"온도조절기, 서모스탯",c:"thermostat",
+   e:["Turn the thermostat up — it's freezing in here.","The thermostat is set to 22 degrees."]},
+  {w:"thingy",i:"/ˈθɪŋi/",p:"n. [C]",m:"(informal) 뭐라고, 거시기, 이름이 생각 안 나는 것",c:"thingy",
+   e:["Can you pass me that thingy on the table?","You know, the little thingy that opens wine bottles."]},
+  {w:"through",i:"/θruː/",p:"adj.",m:"끝난, 관계가 끝난 — 항상 서술적으로만",c:"through",
+   e:["We're through — don't call me again.","I'm through with this job. I quit."]},
+  {w:"treacherous",i:"/ˈtrɛtʃərəs/",p:"adj.",m:"배신적인; 위험한, 믿을 수 없는",c:"treacherous",
+   e:["The treacherous roads were covered in black ice.","He made a treacherous deal behind his partner's back."]},
+  {w:"trespass",i:"/ˈtrɛspəs/",p:"v. [I]",m:"무단침입하다",c:"trespass",
+   e:["You are trespassing on private land — please leave immediately.","They trespassed onto the abandoned factory grounds."]},
+  {w:"try",i:"/traɪ/",p:"v. [T]",m:"재판에 회부하다, 심리하다 (법률 용어)",c:"try",
+   e:["He will be tried for murder in a federal court.","The case was tried before a jury of twelve."]},
+  {w:"tug",i:"/tʌɡ/",p:"v. [I/T]",m:"잡아당기다, 세게 끌다",c:"tug",
+   e:["The child tugged at her mother's sleeve.","He tugged the rope with all his strength."]},
+  {w:"tummy",i:"/ˈtʌmi/",p:"n. [C]",m:"배, 위 — stomach의 구어·유아어",c:"tummy",
+   e:["My tummy hurts after eating so much.","She rubbed her tummy and smiled."]},
+  {w:"turn out",p:"phrv. [I]",m:"결국 ~이 되다, ~임이 밝혀지다; (사람이) 모이다",c:"turn-out",
+   e:["It turned out he was lying the whole time.","The event turned out to be a huge success."]},
+  // U
+  {w:"upkeep",i:"/ˈʌpkiːp/",p:"n. [U]",m:"유지보수, 관리; 유지비",c:"upkeep",
+   e:["The upkeep of this old building is extremely expensive.","She struggled to afford the upkeep of her car."]},
+  // V
+  {w:"vandalize",i:"/ˈvændəlaɪz/",p:"v. [T]",m:"기물을 파손하다, 훼손하다",c:"vandalize",
+   e:["Someone vandalized the bus stop overnight.","The school was vandalized during the weekend."]},
+  {w:"vicious",i:"/ˈvɪʃəs/",p:"adj.",m:"잔인한, 사나운, 악의적인",c:"vicious",n:"cf. vicious cycle (악순환)",
+   e:["The dog launched a vicious attack on the postman.","She sent him a vicious message after the breakup."]},
+  {w:"vile",i:"/vaɪl/",p:"adj.",m:"비열한, 역겨운, 끔찍한",c:"vile",
+   e:["That was a vile thing to say to her.","The food smelled absolutely vile."]},
+  // W
+  {w:"when it comes to",p:"phr.",m:"~에 관해서라면, ~에 있어서는",c:"when-it-comes-to",
+   e:["When it comes to cooking, she's absolutely brilliant.","He's very particular when it comes to punctuality."]},
+  {w:"withdraw",i:"/wɪðˈdrɔː/",p:"v. [I/T]",m:"(돈을) 인출하다; 철수하다, 물러나다; 취소하다",c:"withdraw",
+   e:["She withdrew $500 from her account.","The troops were ordered to withdraw from the border."]},
+  {w:"withdrawal",i:"/wɪðˈdrɔːəl/",p:"n. [C/U]",m:"인출; 철수; 금단증상",c:"withdrawal",
+   e:["He made a cash withdrawal at the ATM.","She's going through withdrawal after quitting smoking."]},
+  {w:"wuss",i:"/wʊs/",p:"n. [C]",m:"겁쟁이, 나약한 사람",c:"wuss",
+   e:["Don't be such a wuss — it's just a tiny spider.","He's a total wuss when it comes to horror movies."]},
+];
+
+// ── Render ──────────────────────────────────────────
+function letter(entry){ return entry.w[0].toUpperCase(); }
+
+function camUrl(e){
+  if(e.u) return e.u;
+  if(e.c) return C + e.c;
+  return null;
+}
+
+let activeSpeakBtn = null;
+
+document.addEventListener('click', function(ev){
+  const btn = ev.target.closest('.sp-btn');
+  if(!btn) return;
+  const text = btn.dataset.text;
+  if(window.speechSynthesis.speaking){
+    window.speechSynthesis.cancel();
+    if(activeSpeakBtn){ activeSpeakBtn.classList.remove('on'); activeSpeakBtn.textContent='🔊'; }
+    if(activeSpeakBtn === btn){ activeSpeakBtn = null; return; }
+  }
+  activeSpeakBtn = btn;
+  btn.classList.add('on'); btn.textContent='■';
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'en-US'; utt.rate = 0.88;
+  utt.onend = utt.onerror = ()=>{ btn.classList.remove('on'); btn.textContent='🔊'; activeSpeakBtn=null; };
+  window.speechSynthesis.speak(utt);
+});
+
+function entryHTML(e){
+  const url = camUrl(e);
+  const wordSpan = url
+    ? `<span class="word"><a href="${url}" target="_blank">${e.w}</a></span>`
+    : `<span class="word">${e.w}</span>`;
+  const ipa = e.i ? `<span class="ipa">${e.i}</span>` : '';
+  const camLink = url ? `<a class="cam-link" href="${url}" target="_blank">🔊 발음</a>` : '';
+  const exItems = e.e.map(ex=>`
+    <li class="ex-item">
+      <span class="ex-dot">›</span>
+      <span class="ex-text">${ex}</span>
+      <button class="sp-btn" data-text="${ex.replace(/"/g,'&quot;')}">🔊</button>
+    </li>`).join('');
+  const note = e.n ? `<div class="note">${e.n}</div>` : '';
+  return `
+  <div class="entry" data-w="${e.w.toLowerCase()}" data-m="${e.m.toLowerCase()}">
+    <div class="erow1">${wordSpan}${ipa}<span class="pos">${e.p}</span>${camLink}</div>
+    <div class="meaning">${e.m}</div>
+    <ul class="examples">${exItems}</ul>
+    ${note}
+  </div>`;
+}
+
+function render(data){
+  const groups = {};
+  data.forEach(e=>{ const l=letter(e); (groups[l]=groups[l]||[]).push(e); });
+  const letters = Object.keys(groups).sort();
+
+  document.getElementById('cnt').textContent = data.length + '개';
+  document.getElementById('anav').innerHTML = letters.map(l=>
+    `<a href="#L${l}">${l}</a>`).join('');
+
+  const main = document.getElementById('main');
+  if(!data.length){ main.innerHTML='<div class="empty">검색 결과가 없어요 😅</div>'; return; }
+  main.innerHTML = letters.map(l=>`
+    <section class="section" id="L${l}">
+      <div class="sec-head">
+        <div class="letter-box">${l}</div>
+        <span class="sec-count">${groups[l].length}개</span>
+      </div>
+      ${groups[l].map(entryHTML).join('')}
+    </section>`).join('');
+}
+
+document.getElementById('search').addEventListener('input', function(){
+  const q = this.value.toLowerCase().trim();
+  if(!q){ render(V); return; }
+  render(V.filter(e=>
+    e.w.toLowerCase().includes(q) ||
+    e.m.toLowerCase().includes(q) ||
+    (e.i||'').includes(q) ||
+    e.e.some(x=>x.toLowerCase().includes(q))
+  ));
+});
+
+render(V);
+</script>
+</body>
+</html>
