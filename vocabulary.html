@@ -121,6 +121,81 @@ main { max-width: 780px; margin: 0 auto; padding: 20px 14px 40px; }
 #quiz-prog-bar {
   height: 4px; background: var(--accent); transition: width .3s;
 }
+
+/* ── Listen Overlay ── */
+#listen-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55);
+  z-index: 1000; align-items: center; justify-content: center; padding: 16px;
+}
+#listen-overlay.open { display: flex; }
+#listen-card {
+  background: #fff; border-radius: 20px; width: 100%; max-width: 560px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow: hidden;
+  display: flex; flex-direction: column; max-height: 90vh;
+}
+#li-prog { width: 100%; height: 4px; background: var(--border); flex-shrink: 0; }
+#li-prog-bar { height: 4px; background: #10b981; transition: width .4s; }
+#listen-header {
+  background: #10b981; color: #fff; padding: 14px 18px;
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+#listen-header h2 { font-size: 1rem; font-weight: 700; }
+#li-counter { font-size: .83rem; opacity: .85; }
+#listen-close {
+  background: rgba(255,255,255,.2); border: none; color: #fff;
+  border-radius: 8px; padding: 4px 10px; cursor: pointer; font-size: .85rem;
+}
+#listen-close:hover { background: rgba(255,255,255,.35); }
+#listen-body { padding: 26px 24px 18px; overflow-y: auto; flex: 1; }
+#li-word {
+  font-size: 2.2rem; font-weight: 800; color: var(--text); word-break: break-word;
+  margin-bottom: 4px; letter-spacing: -.5px;
+}
+#li-ipa { font-size: .95rem; color: var(--sub); font-family: serif; margin-bottom: 8px; min-height: 1.3em; }
+#li-pos {
+  display: inline-block; font-size: .78rem; background: var(--pos-bg);
+  color: var(--pos-text); padding: 2px 9px; border-radius: 4px;
+  font-weight: 600; margin-bottom: 18px;
+}
+#li-meaning {
+  font-size: 1.05rem; font-weight: 600; color: #1e40af;
+  background: #eff6ff; padding: 13px 16px; border-radius: 10px;
+  margin-bottom: 14px; line-height: 1.55; min-height: 50px;
+  opacity: 0; transition: opacity .45s;
+}
+#li-examples { list-style: none; }
+.li-ex {
+  font-size: .9rem; color: #4b5563; padding: 7px 6px;
+  border-top: 1px solid var(--border); display: flex; gap: 7px;
+  border-radius: 6px; transition: background .25s, color .25s;
+}
+.li-ex:first-child { border-top: none; }
+.li-ex.speaking { background: #fef9c3; color: #1a1a1a; font-weight: 500; }
+#listen-footer {
+  padding: 14px 20px 18px; border-top: 1px solid var(--border); flex-shrink: 0;
+}
+.li-controls { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+#li-prev-btn, #li-next-btn {
+  background: #f3f4f6; border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 9px 16px; cursor: pointer; font-size: .95rem; font-weight: 700;
+  color: var(--text); transition: all .15s;
+}
+#li-prev-btn:hover, #li-next-btn:hover { background: var(--border); }
+#li-play-btn {
+  flex: 1; padding: 10px; background: #10b981; color: #fff;
+  border: none; border-radius: 8px; font-size: .95rem; font-weight: 700;
+  cursor: pointer; transition: opacity .15s;
+}
+#li-play-btn:hover { opacity: .85; }
+.li-speed { display: flex; align-items: center; gap: 6px; }
+.li-speed-label { font-size: .8rem; color: var(--sub); }
+.li-speed-btn {
+  background: #f3f4f6; border: 1.5px solid var(--border); border-radius: 6px;
+  padding: 4px 10px; cursor: pointer; font-size: .78rem; font-weight: 700;
+  color: var(--sub); transition: all .15s;
+}
+.li-speed-btn.active { background: #10b981; color: #fff; border-color: #10b981; }
+.li-speed-btn:hover:not(.active) { background: var(--border); }
 </style>
 </head>
 <body>
@@ -128,10 +203,45 @@ main { max-width: 780px; margin: 0 auto; padding: 20px 14px 40px; }
   <div class="hrow1">
     <h1>📚 English Vocabulary</h1>
     <span class="badge" id="cnt"></span>
-    <button onclick="quizOpen()" style="margin-left:auto;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap;">🎯 Quiz</button>
+    <div style="margin-left:auto;display:flex;gap:8px;">
+      <button onclick="listenOpen()" style="background:#10b981;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap;">🎧 듣기</button>
+      <button onclick="quizOpen()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap;">🎯 Quiz</button>
+    </div>
   </div>
   <input id="search" type="text" placeholder="단어 검색… (영어 또는 한국어)">
 </header>
+
+<!-- Listen Overlay -->
+<div id="listen-overlay">
+  <div id="listen-card">
+    <div id="li-prog"><div id="li-prog-bar" style="width:0%"></div></div>
+    <div id="listen-header">
+      <h2>🎧 랜덤 듣기</h2>
+      <span id="li-counter"></span>
+      <button id="listen-close" onclick="listenClose()">✕ 닫기</button>
+    </div>
+    <div id="listen-body">
+      <div id="li-word"></div>
+      <div id="li-ipa"></div>
+      <div id="li-pos"></div>
+      <div id="li-meaning"></div>
+      <ul id="li-examples"></ul>
+    </div>
+    <div id="listen-footer">
+      <div class="li-controls">
+        <button id="li-prev-btn" onclick="listenPrev()">◀</button>
+        <button id="li-play-btn" onclick="listenToggle()">⏸ 일시정지</button>
+        <button id="li-next-btn" onclick="listenNext()">▶</button>
+      </div>
+      <div class="li-speed">
+        <span class="li-speed-label">속도</span>
+        <button class="li-speed-btn" data-s="0.7" onclick="listenSpeed(0.7)">0.7×</button>
+        <button class="li-speed-btn active" data-s="1.0" onclick="listenSpeed(1.0)">1.0×</button>
+        <button class="li-speed-btn" data-s="1.3" onclick="listenSpeed(1.3)">1.3×</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Quiz Overlay -->
 <div id="quiz-overlay">
@@ -167,6 +277,12 @@ const MW = 'https://www.merriam-webster.com/dictionary/';
 
 const V = [
   // A
+  {w:"a bunch of",p:"det. / phr.",m:"많은, 여러 개의; (구어) 꽤 많은 수·양의",c:"bunch",n:"cf. a bunch of = a lot of (구어체로 더 캐주얼); a bunch of people/things = 꽤 많은 사람들/것들; bunches (복수) = 다발들",
+   e:["She bought a bunch of flowers for her mom.","I have a bunch of things to do before the trip."],
+   x:[
+     {k:"그녀는 엄마를 위해 꽃 한 다발을 샀다.",s:"She (주어) + bought (동사) + a bunch of flowers (목적어) + for her mom (전치사구)\n→ a bunch of = 한 다발의 (구체적 수량)\n→ flowers = 꽃들 (복수)"},
+     {k:"여행 전에 할 일이 엄청 많아.",s:"I (주어) + have (동사) + a bunch of things (목적어) + to do (to부정사, things 수식) + before the trip (시간 전치사구)\n→ a bunch of things = 많은 것들 (구어체)\n→ to do = 해야 할 (명사 수식 to부정사)"}
+   ]},
   {w:"a play on words",p:"phr.",m:"말장난, 동음이의어나 중의적 표현을 활용한 언어유희",c:"play-on-words",n:"= pun; 복수형: plays on words",
    e:["The comedian's joke was a clever play on words.","'Time flies like an arrow; fruit flies like a banana' is a famous play on words."],
    x:[
@@ -202,6 +318,12 @@ const V = [
    x:[
      {k:"법원은 내일 아침까지 휴정할 것이다.",s:"The court (주어) + will adjourn (미래조동사+자동사) + until tomorrow morning (전치사구)\n→ adjourn [I] = 휴정하다, 자동사로 목적어 불필요\n→ until ~ = ~까지"},
      {k:"회의는 의결 정족수 부족으로 중단됐다.",s:"The meeting (주어) + was adjourned (수동태) + due to lack of quorum (이유 전치사구)\n→ due to ~ = ~ 때문에\n→ lack of quorum = 정족수(quorum) 부족"}
+   ]},
+  {w:"admit",i:"/ədˈmɪt/",p:"v. [T]",m:"인정하다, 시인하다; 허용하다, 들어오게 하다",c:"admit",n:"cf. admission (입장; 시인); admittedly (인정하건대); admit to V-ing = ~했음을 인정하다; ≠ deny",
+   e:["He finally admitted that he was wrong.","She admitted to taking the money without asking."],
+   x:[
+     {k:"그는 마침내 자신이 틀렸다는 것을 인정했다.",s:"He (주어) + finally admitted (동사) + that he was wrong (that절)\n→ admit (that) S+V = ~임을 인정하다\n→ finally = 마침내, 결국"},
+     {k:"그녀는 허락 없이 돈을 가져갔음을 인정했다.",s:"She (주어) + admitted (동사) + to taking the money (전치사+동명사) + without asking (분사구)\n→ admit to V-ing = ~했음을 인정하다\n→ without asking = 허락 없이"}
    ]},
   {w:"adrenal gland",i:"/əˌdriːnəl ɡlænd/",p:"n. [C]",m:"부신 (콩팥 위에 있는 내분비 기관; 아드레날린·코르티솔 등 분비)",c:"adrenal-gland",
    e:["The adrenal glands produce hormones like adrenaline in response to stress.","Damage to the adrenal gland can disrupt the body's hormone balance."],
@@ -292,11 +414,23 @@ const V = [
      {k:"그런 종류의 말은 교실에서 적절하지 않아.",s:"That kind of language (주어) + is not appropriate (be동사+부정+형용사) + in the classroom (장소 전치사구)\n→ 'not appropriate' = 부적절한\n→ That kind of ~ = 그런 종류의 ~"},
      {k:"면접에 적합한 복장을 꼭 갖춰 입어.",s:"Make sure (명령문+접속사) + you wear (주어+동사) + appropriate clothing (형용사+명사) + for the interview (전치사구)\n→ 'Make sure (that) S+V' = 반드시 ~해라\n→ appropriate clothing = 적절한 복장"}
    ]},
+  {w:"approximately",i:"/əˈprɒksɪmətli/",p:"adv.",m:"약, 대략, 거의 — 정확하지 않은 수치 앞에 사용",c:"approximately",n:"= about, roughly, around; ≠ exactly; cf. approximate (adj.) = 대략적인",
+   e:["The meeting will last approximately two hours.","There were approximately 500 people at the concert."],
+   x:[
+     {k:"회의는 약 두 시간 정도 걸릴 것입니다.",s:"The meeting (주어) + will last (동사) + approximately two hours (부사+명사구)\n→ approximately = 약, 대략 (부사, 숫자 앞에 위치)\n→ last ~ hours = ~시간 동안 지속되다"},
+     {k:"콘서트에는 약 500명이 있었다.",s:"There were approximately 500 people (유도부사+동사+부사+수+명사) + at the concert (장소 전치사구)\n→ approximately 500 = 약 500 (대략적인 수치)\n→ There were ~ = ~이 있었다 (유도부사 구문)"}
+   ]},
   {w:"arcane",i:"/ɑːrˈkeɪn/",p:"adj.",m:"비밀스러운, 신비로운; 소수만 아는 난해한",c:"arcane",
    e:["The professor spoke in arcane language that few students could follow.","She's fascinated by arcane rituals and ancient magic."],
    x:[
      {k:"교수는 학생 대부분이 이해하지 못하는 난해한 언어로 말했다.",s:"The professor (주어) + spoke in arcane language (동사+전치사+목적어) + that few students could follow (관계절)\n→ arcane = 난해한, 소수만 아는\n→ that few students could follow = 거의 이해하지 못하는 (관계절)"},
      {k:"그녀는 비밀스러운 의식과 고대 마법에 매료되어 있다.",s:"She's fascinated (현재완료 수동+형용사) + by arcane rituals and ancient magic (전치사구)\n→ be fascinated by ~ = ~에 매료되다\n→ arcane rituals = 신비로운/비밀스러운 의식"}
+   ]},
+  {w:"artificial intelligence",i:"/ˌɑːrtɪˈfɪʃəl ɪnˈtɛlɪdʒəns/",p:"n. [U]",m:"인공지능 (컴퓨터가 인간처럼 학습·추론·판단하는 기술) — 약어: AI",c:"artificial-intelligence",n:"cf. machine learning (머신러닝); deep learning (딥러닝); generative AI (생성형 AI); AI-powered = AI 기반의",
+   e:["Artificial intelligence is transforming industries from healthcare to finance.","Many people worry about the ethical implications of artificial intelligence."],
+   x:[
+     {k:"인공지능은 의료부터 금융까지 산업 전반을 변화시키고 있다.",s:"Artificial intelligence (주어) + is transforming (현재진행) + industries (목적어) + from healthcare to finance (전치사구)\n→ artificial intelligence = 인공지능 (AI)\n→ from A to B = A에서 B까지 (범위)"},
+     {k:"많은 사람들이 인공지능의 윤리적 영향에 대해 우려한다.",s:"Many people (주어) + worry about (동사+전치사) + the ethical implications of artificial intelligence (목적어)\n→ worry about ~ = ~에 대해 걱정하다\n→ ethical implications = 윤리적 함의·영향"}
    ]},
   {w:"ascertain",i:"/ˌæsərˈteɪn/",p:"v. [T]",m:"(사실을) 확인하다, 알아내다 — 격식체",c:"ascertain",n:"= find out, determine; 주로 격식적 맥락에서 사용",
    e:["The investigators tried to ascertain the cause of the fire.","Please ascertain whether the documents have been filed correctly."],
@@ -327,6 +461,12 @@ const V = [
    x:[
      {k:"그는 과거의 실수들을 속죄하려고 수년간 노력했다.",s:"He (주어) + spent years (동사구) + trying to atone for his past mistakes (분사구문)\n→ 'spend + 시간 + V-ing' = ~하면서 시간을 보내다\n→ atone for ~ = ~에 대해 속죄하다"},
      {k:"아무것도 그가 끼친 해악을 완전히 속죄할 수는 없다.",s:"Nothing (주어) + can fully atone for (조동사+부사+동사구) + the harm he caused (목적어)\n→ nothing can ~ = 아무것도 ~할 수 없다\n→ the harm he caused = 그가 끼친 해악 (관계절)"}
+   ]},
+  {w:"authenticity",i:"/ˌɔːθɛnˈtɪsɪti/",p:"n. [U]",m:"진정성, 진품임; 신뢰성, 신빙성",c:"authenticity",n:"cf. authentic (진짜의, 진정한); authenticate (진품임을 증명하다); authentically (진정성 있게)",
+   e:["The authenticity of the painting has been questioned by experts.","People are drawn to her because of her authenticity and warmth."],
+   x:[
+     {k:"그 그림의 진품 여부가 전문가들에 의해 의문 제기되고 있다.",s:"The authenticity of the painting (주어) + has been questioned (현재완료 수동) + by experts (행위자 전치사구)\n→ authenticity = 진품임, 진정성\n→ has been questioned = 의문이 제기되어 왔다 (현재완료 수동)"},
+     {k:"사람들은 그녀의 진정성과 따뜻함 때문에 그녀에게 끌린다.",s:"People (주어) + are drawn to her (수동태+전치사) + because of her authenticity and warmth (이유 전치사구)\n→ be drawn to sb = ~에게 끌리다\n→ because of ~ = ~ 때문에 (전치사, 뒤에 명사구)"}
    ]},
   // B
   {w:"benefactor",i:"/ˈbɛnɪfæktər/",p:"n. [C]",m:"후원자, 은인",c:"benefactor",
@@ -376,6 +516,12 @@ const V = [
    x:[
      {k:"담즙은 간에서 생성되어 지방 소화를 돕는다.",s:"Bile (주어) + is produced by the liver (수동태) + and helps digest fats (등위절)\n→ be produced by ~ = ~에 의해 생성되다\n→ help (to) V = V하는 데 도움을 주다"},
      {k:"그의 리뷰는 악의로 가득 차 있었고, 작가를 인신공격했다.",s:"His review (주어) + was full of bile (동사+보어) + attacking the author personally (분사구문)\n→ be full of ~ = ~로 가득 차다\n→ attack ~ personally = ~을 인신공격하다"}
+   ]},
+  {w:"blab",i:"/blæb/",p:"v. [I/T]",m:"(비밀을) 지껄이다, 함부로 말하다; 수다떨다",c:"blab",n:"cf. blabbermouth (n. 수다쟁이, 비밀을 못 지키는 사람); blab sth out = ~을 무심코 말해버리다",
+   e:["Don't blab about the surprise party — she can't know yet.","He blabbed the secret to everyone at the office."],
+   x:[
+     {k:"깜짝 파티 얘기 떠벌리지 마 — 그녀가 아직 몰라야 해.",s:"Don't blab (부정 명령) + about the surprise party (전치사구) — she can't know yet (주절)\n→ blab about ~ = ~에 대해 함부로 말하다\n→ can't know yet = 아직 알면 안 된다"},
+     {k:"그는 사무실 모든 사람에게 비밀을 떠벌렸다.",s:"He (주어) + blabbed the secret (동사+목적어) + to everyone at the office (전치사구)\n→ blab [T] = (비밀을) 함부로 말하다\n→ to everyone at the office = 사무실 모두에게"}
    ]},
   {w:"black widow",i:"/blæk ˈwɪdoʊ/",p:"n. [C]",m:"블랙 위도우 거미 (독성 강한 암거미); (비유) 남자를 파멸시키는 여자, 치명적인 여성",c:"black-widow-spider",n:"cf. black widow spider; 암컷이 교미 후 수컷을 잡아먹는 것으로 알려짐",
    e:["She was bitten by a black widow in the garden.","In the movie, she plays a black widow who seduces and destroys powerful men."],
@@ -430,6 +576,12 @@ const V = [
    x:[
      {k:"그는 자기 차에 손대는 사람은 마구 두들겨 패겠다고 협박했다.",s:"He (주어) + threatened to beat the crap out of (동사+to부정사) + anyone who touched his car (목적어+관계절)\n→ 'threaten to V' = V하겠다고 위협하다\n→ anyone who ~ = ~하는 누구든"},
      {k:"싸움에서 덩치 큰 애가 그를 마구 두들겨 팼다.",s:"The bigger kid (주어) + beat the crap out of him (동사구+목적어) + in the fight (전치사구)\n→ 'beat the crap out of ~' = ~을 마구 패다 (비격식 강조)\n→ the bigger kid = 비교급 (더 큰 아이)"}
+   ]},
+  {w:"bedtime story",i:"/ˈbɛdtaɪm ˈstɔːri/",p:"n. [C]",m:"잠자리 동화, 자기 전에 들려주는 이야기",c:"bedtime-story",n:"cf. bedtime (잠잘 시간); read/tell a bedtime story = 잠자리 동화를 읽어주다/들려주다",
+   e:["She read her daughter a bedtime story every night.","His explanation was so far-fetched it sounded like a bedtime story."],
+   x:[
+     {k:"그녀는 매일 밤 딸에게 잠자리 동화를 읽어줬다.",s:"She (주어) + read her daughter (동사+간접목적어) + a bedtime story (직접목적어) + every night (시간 부사구)\n→ 'read + 사람 + 이야기' = ~에게 이야기를 읽어주다\n→ every night = 매일 밤"},
+     {k:"그의 설명은 너무 황당해서 잠자리 동화처럼 들렸다.",s:"His explanation (주어) + was so far-fetched (동사+부사+형용사) + it sounded like a bedtime story (결과절)\n→ so ~ (that) = 너무 ~해서 …이다\n→ far-fetched = 억지스러운, 황당한"}
    ]},
   {w:"be two of a kind",p:"phr.",m:"(둘이) 같은 부류이다, 닮은꼴이다",c:"kind",
    e:["Those two are really two of a kind — always arguing.","You and your brother are two of a kind when it comes to stubbornness."],
@@ -540,6 +692,12 @@ const V = [
      {k:"그 전투로 양측 모두 많은 사상자가 발생했다.",s:"The battle (주어) + resulted in heavy casualties (동사구+목적어) + on both sides (전치사구)\n→ result in ~ = ~를 초래하다\n→ heavy casualties = 많은 사상자"},
      {k:"그녀는 회사 예산 삭감의 최대 피해자였다.",s:"She (주어) + was (동사) + the main casualty (보어) + of the company's budget cuts (전치사구)\n→ casualty of ~ = ~의 피해자\n→ budget cuts = 예산 삭감"}
    ]},
+  {w:"cesarean",i:"/sɪˈzɛəriən/",p:"n. [C]",m:"제왕절개 (수술) (= cesarean section, C-section)",c:"caesarean",n:"= C-section (구어); cf. natural birth = 자연분만; epidural = 경막외 마취",
+   e:["She had a cesarean because the baby was in the wrong position.","Recovery from a cesarean takes longer than a vaginal birth."],
+   x:[
+     {k:"아기가 잘못된 위치에 있어서 그녀는 제왕절개를 했다.",s:"She (주어) + had a cesarean (동사+목적어) + because the baby was in the wrong position (이유 부사절)\n→ have a cesarean = 제왕절개를 하다\n→ in the wrong position = 잘못된 위치에 (역아 등)"},
+     {k:"제왕절개 후 회복은 질식 분만보다 더 오래 걸린다.",s:"Recovery from a cesarean (주어) + takes longer (동사+비교급) + than a vaginal birth (비교 대상)\n→ recovery from ~ = ~로부터의 회복\n→ vaginal birth = 질식 분만 (자연분만)"}
+   ]},
   {w:"catch",i:"/kætʃ/",p:"v. [T]",m:"잡다, 받아내다; (병에) 걸리다; (범인을) 잡다; 들키다",c:"catch",
    e:["She caught the ball with both hands.","I think I caught a cold from someone at the office."],
    x:[
@@ -563,6 +721,12 @@ const V = [
    x:[
      {k:"학부모들이 수학여행 인솔 자원봉사를 했다.",s:"Parents (주어) + volunteered (동사) + as chaperones (자격 전치사구) + for the school trip (목적 전치사구)\n→ volunteer as ~ = ~로 자원봉사하다\n→ for the school trip = 수학여행을 위해"},
      {k:"그 댄스 행사에는 최소 세 명의 인솔 보호자가 있어야 했다.",s:"The dance (주어) + required (동사) + at least three chaperones (목적어) + to be present (to부정사, 목적격 보어)\n→ 'require + 목적어 + to V' = ~가 …하도록 요구하다\n→ to be present = 참석해 있도록"}
+   ]},
+  {w:"cheating",i:"/ˈtʃiːtɪŋ/",p:"n. [U] / v.",m:"부정행위, 속임; 바람을 피우기; v. 속이다, 부정행위를 하다",c:"cheat",n:"cf. cheat on sb = ~에게 바람을 피우다; cheat on a test = 시험에서 부정행위를 하다; cheater (부정행위자)",
+   e:["He was caught cheating on the exam and expelled.","She found out about his cheating and ended the relationship immediately."],
+   x:[
+     {k:"그는 시험에서 부정행위를 하다 걸려 퇴학당했다.",s:"He (주어) + was caught (수동태) + cheating on the exam (분사구, 동시 행위) + and expelled (등위절, 수동)\n→ be caught V-ing = ~하다 들키다\n→ cheat on the exam = 시험에서 부정행위를 하다"},
+     {k:"그녀는 그의 바람기를 알게 됐고 즉시 관계를 끝냈다.",s:"She (주어) + found out about his cheating (동사구+목적어) + and ended the relationship immediately (등위절)\n→ find out about ~ = ~에 대해 알게 되다\n→ cheating = 바람 피우기 (명사)"}
    ]},
   {w:"chest",i:"/tʃɛst/",p:"n. [C]",m:"가슴, 흉부; 상자, 궤짝",c:"chest",n:"cf. chest of drawers (서랍장), get sth off one's chest (속마음을 털어놓다)",
    e:["He felt a sharp pain in his chest and couldn't breathe.","She got it off her chest and finally told him the truth."],
@@ -648,6 +812,12 @@ const V = [
      {k:"그는 심각한 범죄를 저질러 10년 형을 선고받았다.",s:"He (주어) + committed a serious crime (동사+목적어) + and was sentenced to ten years (접속사+수동태)\n→ commit a crime = 범죄를 저지르다\n→ be sentenced to ~ = ~의 형을 선고받다"},
      {k:"그녀는 첫날부터 프로젝트에 전력을 다했다.",s:"She (주어) + committed herself fully (동사+재귀목적어+부사) + to the project (전치사구) + from day one (시간 전치사구)\n→ 'commit oneself to ~' = ~에 전념하다, 헌신하다\n→ from day one = 첫날부터"}
    ]},
+  {w:"commotion",i:"/kəˈmoʊʃən/",p:"n. [C/U]",m:"소란, 소동, 큰 혼란",c:"commotion",n:"cf. cause/create a commotion = 소동을 일으키다; in a commotion = 소란스러운 상태에서",
+   e:["There was a commotion outside when the celebrity arrived.","She heard a commotion downstairs and went to check."],
+   x:[
+     {k:"유명인이 도착하자 밖에서 소란이 일었다.",s:"There was a commotion (유도부사+동사+주어) + outside (부사) + when the celebrity arrived (시간 접속사절)\n→ There was ~ = ~가 있었다 (유도부사 구문)\n→ commotion = 소란, 소동"},
+     {k:"그녀는 아래층에서 소란 소리를 듣고 확인하러 갔다.",s:"She (주어) + heard a commotion (동사+목적어) + downstairs (장소 부사) + and went to check (등위절)\n→ downstairs = 아래층에서\n→ go to check = 확인하러 가다"}
+   ]},
   {w:"compassion",i:"/kəmˈpæʃən/",p:"n. [U]",m:"연민, 동정심, 측은지심",c:"compassion",
    e:["She showed great compassion for the homeless.","A good doctor treats patients with compassion as well as expertise."],
    x:[
@@ -684,6 +854,18 @@ const V = [
      {k:"그들은 마침내 아이를 임신하기까지 수년간 노력했다.",s:"They (주어) + tried for years (동사+전치사구) + before finally conceiving a child (접속사+부사+동명사)\n→ conceive [I/T] = 임신하다 (의학적 맥락)\n→ before finally V-ing = 마침내 ~하기 전까지"},
      {k:"그는 일본 여행 중에 그 아이디어를 구상했다.",s:"He (주어) + conceived the idea (동사+목적어) + while traveling in Japan (시간 부사절)\n→ conceive [T] = (아이디어·계획을) 고안하다, 구상하다\n→ while traveling = 여행하는 동안 (시간 분사구)"}
    ]},
+  {w:"condone",i:"/kənˈdoʊn/",p:"v. [T]",m:"묵인하다, 용납하다 (잘못된 행동을 허용하거나 무시하다)",c:"condone",n:"≠ condemn (비난하다); cf. tolerate (참다, 견디다); overlook (못 본 체하다)",
+   e:["The school does not condone bullying in any form.","By staying silent, you're essentially condoning their behavior."],
+   x:[
+     {k:"학교는 어떤 형태의 괴롭힘도 용납하지 않습니다.",s:"The school (주어) + does not condone (동사구) + bullying (목적어) + in any form (전치사구)\n→ condone = 묵인하다, 용납하다 [타동사]\n→ in any form = 어떤 형태로든"},
+     {k:"침묵을 지킴으로써 당신은 사실상 그들의 행동을 묵인하는 겁니다.",s:"By staying silent (전치사+분사구, 수단) + you're essentially condoning (주어+부사+동사) + their behavior (목적어)\n→ by V-ing = ~함으로써\n→ essentially = 사실상, 본질적으로"}
+   ]},
+  {w:"confession",i:"/kənˈfɛʃən/",p:"n. [C/U]",m:"고백, 자백; (종교) 고해성사",c:"confession",n:"cf. confess (v. 고백하다, 자백하다); confess to sth = ~을 인정하다; under confession = 고해성사 중에",
+   e:["He made a full confession to the police.","I have a confession to make — I was the one who broke it."],
+   x:[
+     {k:"그는 경찰에 모두 자백했다.",s:"He (주어) + made a full confession (동사구) + to the police (전치사구)\n→ make a confession = 자백하다, 고백하다\n→ full confession = 완전한 자백"},
+     {k:"고백할 게 있어 — 그걸 깬 게 나야.",s:"I have a confession to make (주어+동사+목적어+to부정사) — I was the one who broke it (설명절)\n→ have a confession to make = 고백할 게 있다\n→ the one who ~ = ~한 사람"}
+   ]},
   {w:"conquer",i:"/ˈkɒŋkər/",p:"v. [T]",m:"정복하다, 극복하다; (두려움·문제를) 이겨내다",c:"conquer",
    e:["Alexander the Great conquered much of the known world.","She finally conquered her fear of public speaking."],
    x:[
@@ -695,6 +877,12 @@ const V = [
    x:[
      {k:"그녀는 반에서 가장 성실한 학생이야.",s:"She's (주어+be동사) + the most conscientious student (최상급+명사) + in the class (전치사구)\n→ 최상급: the most + 긴 형용사\n→ in the class = 반에서 (범위 한정)"},
      {k:"그는 모든 세부사항을 꼼꼼히 다시 확인하는 일에 철저했다.",s:"He (주어) + was conscientious (동사+형용사) + about double-checking every detail (전치사+동명사구)\n→ 'conscientious about V-ing' = ~하는 것에 꼼꼼한\n→ double-check = 다시 한번 확인하다"}
+   ]},
+  {w:"constipated",i:"/ˈkɒnstɪpeɪtɪd/",p:"adj.",m:"변비가 있는",c:"constipated",n:"cf. constipation (n. [U] 변비); laxative (완하제, 변비약); cf. diarrhea (설사)",
+   e:["I've been constipated for three days and nothing seems to help.","Eating more fiber can prevent you from getting constipated."],
+   x:[
+     {k:"3일째 변비가 있는데 아무것도 효과가 없는 것 같아.",s:"I've been constipated (현재완료+형용사) + for three days (기간 전치사구) + and nothing seems to help (등위접속사+주어+동사)\n→ be constipated = 변비가 있다\n→ nothing seems to help = 아무것도 효과가 없는 것 같다"},
+     {k:"섬유질을 더 많이 먹으면 변비를 예방할 수 있다.",s:"Eating more fiber (주어, 동명사구) + can prevent (조동사+동사) + you (목적어) + from getting constipated (전치사+동명사)\n→ prevent sb from V-ing = ~가 …하는 것을 막다\n→ getting constipated = 변비가 생기는 것"}
    ]},
   {w:"contaminate",i:"/kənˈtæmɪneɪt/",p:"v. [T]",m:"오염시키다, 더럽히다",c:"contaminate",
    e:["Industrial waste contaminated the river for miles downstream.","Bacteria can contaminate food if it isn't stored properly."],
@@ -719,6 +907,18 @@ const V = [
    x:[
      {k:"그녀는 회사와 2년 계약을 체결했다.",s:"She (주어) + signed a two-year contract (동사+목적어) + with the company (전치사구)\n→ sign a contract = 계약에 서명하다, 계약을 맺다\n→ with the company = 그 회사와"},
      {k:"그는 열대지방을 여행하는 동안 중병에 걸렸다.",s:"He (주어) + contracted a serious illness (동사+목적어) + while travelling in the tropics (분사구문)\n→ contract [T] = (병에) 걸리다 (격식체)\n→ while travelling = 여행하는 동안"}
+   ]},
+  {w:"contribute",i:"/kənˈtrɪbjuːt/",p:"v. [I/T]",m:"기여하다, 공헌하다; 기부하다; 원인이 되다",c:"contribute",n:"cf. contribution (n. 기여, 기부); contributor (기여자); contribute to ~ = ~에 기여하다; contributing factor = 원인 요소",
+   e:["Everyone is expected to contribute to the group project.","Smoking is known to contribute to lung cancer."],
+   x:[
+     {k:"모두가 그룹 프로젝트에 기여하도록 기대된다.",s:"Everyone (주어) + is expected (수동태) + to contribute (to부정사) + to the group project (전치사구)\n→ be expected to V = V하도록 기대되다\n→ contribute to ~ = ~에 기여하다"},
+     {k:"흡연은 폐암의 원인이 되는 것으로 알려져 있다.",s:"Smoking (주어) + is known (수동태) + to contribute to lung cancer (to부정사구)\n→ be known to V = V하는 것으로 알려지다\n→ contribute to ~ = ~의 원인이 되다"}
+   ]},
+  {w:"convenient",i:"/kənˈviːniənt/",p:"adj.",m:"편리한, 간편한; (시간·장소가) 적합한",c:"convenient",n:"cf. convenience (편의; 편리한 것); conveniently (편리하게); ≠ inconvenient (불편한); convenient for sb = ~에게 편리한",
+   e:["Is Tuesday convenient for you?","The apartment is convenient for the subway and shops."],
+   x:[
+     {k:"화요일이 편하세요?",s:"Is Tuesday (주어) + convenient (보어) + for you (전치사구)?\n→ convenient for sb = ~에게 편한, 적합한\n→ Is ~ convenient? = ~가 괜찮습니까? (약속 잡을 때 자주 사용)"},
+     {k:"그 아파트는 지하철과 상점들에 접근하기 편리하다.",s:"The apartment (주어) + is convenient (동사+형용사) + for the subway and shops (전치사구)\n→ convenient for ~ = ~에 편리한, ~에 가까워 이용하기 쉬운\n→ the subway = 지하철"}
    ]},
   {w:"convict",i:"/kənˈvɪkt/",p:"v. [T]",m:"유죄 판결을 내리다; n. /ˈkɒnvɪkt/ 기결수, 전과자",c:"convict",
    e:["He was convicted of armed robbery and sentenced to ten years.","The jury convicted her on all counts."],
@@ -781,6 +981,12 @@ const V = [
      {k:"그는 유명인의 실물 크기 판지 입체 모형 뒤에 숨었다.",s:"He (주어) + hid (동사) + behind a life-size cardboard cutout of a celebrity (전치사구)\n→ hide behind ~ = ~ 뒤에 숨다 (hid = hide 과거형)\n→ life-size = 실물 크기의"}
    ]},
   // D
+  {w:"deal with",p:"phrv. [T]",m:"~을 처리하다, 다루다; ~을 대처하다; ~와 거래하다",c:"deal-with",n:"cf. deal with problems/stress/people = 문제/스트레스/사람을 처리하다; can't deal with = ~을 감당 못하다",
+   e:["How do you deal with stress at work?","The manager needs to deal with the complaint right away."],
+   x:[
+     {k:"직장에서 스트레스를 어떻게 처리해?",s:"How (의문부사) + do you deal with (조동사+주어+동사구) + stress at work (목적어)?\n→ deal with ~ = ~을 처리하다, 대처하다\n→ stress at work = 직장 스트레스"},
+     {k:"매니저는 즉시 그 불만을 처리해야 한다.",s:"The manager (주어) + needs to deal with (동사+to부정사) + the complaint (목적어) + right away (부사구)\n→ deal with a complaint = 불만을 처리하다\n→ right away = 즉시, 바로"}
+   ]},
   {w:"decapitate",i:"/dɪˈkæpɪteɪt/",p:"v. [T]",m:"목을 베다, 참수하다",c:"decapitate",n:"cf. decapitation (참수); behead도 같은 의미",
    e:["The executioner decapitated the prisoner with a single stroke.","The statue was decapitated by vandals."],
    x:[
@@ -883,6 +1089,12 @@ const V = [
      {k:"두 보고서 사이에 불일치가 있었다.",s:"There was (유도부사+동사) + a discrepancy (주어) + between the two reports (전치사구)\n→ There is/was ~ = ~이 있다/있었다 (존재 구문)\n→ between A and B = A와 B 사이에"},
      {k:"경찰은 그의 진술에서 모순점들을 발견했다.",s:"The police (주어) + noticed (동사) + discrepancies (목적어) + in his story (전치사구)\n→ notice = 알아채다 [타동사]\n→ discrepancies = discrepancy의 복수형 (여러 불일치·모순점들)"}
    ]},
+  {w:"discuss",i:"/dɪˈskʌs/",p:"v. [T]",m:"토론하다, 논의하다, 의논하다",c:"discuss",n:"cf. discussion (n. 토론, 논의); discuss sth with sb = ~에 대해 ~와 의논하다; ≠ discuss about (×— discuss는 전치사 없이 목적어를 바로 취함)",
+   e:["We need to discuss the budget before making any decisions.","She discussed her concerns with her manager."],
+   x:[
+     {k:"어떤 결정을 내리기 전에 예산을 논의해야 해.",s:"We (주어) + need to discuss (동사+to부정사) + the budget (목적어) + before making any decisions (전치사+동명사구)\n→ discuss [T] = 논의하다 (전치사 불필요)\n→ before V-ing = ~하기 전에"},
+     {k:"그녀는 자신의 우려 사항을 매니저와 의논했다.",s:"She (주어) + discussed her concerns (동사+목적어) + with her manager (전치사구)\n→ discuss sth with sb = ~에 대해 ~와 의논하다\n→ concerns = 걱정, 우려 사항 (복수)"}
+   ]},
   {w:"disease",i:"/dɪˈziːz/",p:"n. [C/U]",m:"(특정) 질병, 병",c:"disease",
    e:["Heart disease is the leading cause of death worldwide.","The disease spread rapidly through the population."],
    x:[
@@ -900,6 +1112,12 @@ const V = [
    x:[
      {k:"그는 목에 걸린 생선 가시를 빼내려 했다.",s:"He (주어) + tried to dislodge (동사+to부정사) + the fish bone stuck in his throat (목적어+분사구)\n→ 'try to V' = V하려고 노력하다\n→ stuck in his throat = 목에 걸린 (과거분사, 형용사)"},
      {k:"폭우로 인해 언덕 쪽에서 큰 바위가 떨어졌다.",s:"Heavy rains (주어) + dislodged a boulder (동사+목적어) + from the hillside (전치사구)\n→ dislodge ~ from ~ = ~에서 …을 떼어내다\n→ a boulder = 큰 바위"}
+   ]},
+  {w:"dismiss",i:"/dɪˈsmɪs/",p:"v. [T]",m:"무시하다, 일축하다; 해고하다; (수업·모임을) 끝내다, 해산시키다",c:"dismiss",n:"cf. dismissal (해고; 기각); dismissive (무시하는); dismiss an idea = 아이디어를 일축하다",
+   e:["She dismissed his concerns as overreacting.","The teacher dismissed the class five minutes early."],
+   x:[
+     {k:"그녀는 그의 우려를 과민반응이라며 일축했다.",s:"She (주어) + dismissed his concerns (동사+목적어) + as overreacting (전치사+동명사)\n→ dismiss A as B = A를 B라며 일축하다\n→ overreacting = 과민반응 (하는 것)"},
+     {k:"선생님은 5분 일찍 수업을 마쳤다.",s:"The teacher (주어) + dismissed the class (동사+목적어) + five minutes early (부사구)\n→ dismiss the class = 수업을 끝내다, 해산시키다\n→ five minutes early = 5분 일찍"}
    ]},
   {w:"dispense",i:"/dɪˈspɛns/",p:"v. [T]",m:"(약·정보 등을) 나누어 주다, 분배하다; (기계가) 자동으로 내보내다; dispense with = ~없이 지내다, ~을 생략하다",c:"dispense",
    e:["The machine dispenses hot drinks for one dollar.","Let's dispense with the formalities and get straight to business."],
@@ -924,6 +1142,12 @@ const V = [
    x:[
      {k:"위스키는 발효된 곡물을 증류해서 만든다.",s:"Whisky (주어) + is made (수동태) + by distilling fermented grain (전치사+동명사구)\n→ be made by V-ing = ~함으로써 만들어지다\n→ fermented grain = 발효된 곡물"},
      {k:"그 보고서는 수년간의 연구를 몇 가지 핵심 발견으로 압축한다.",s:"The report (주어) + distills (동사) + years of research (목적어) + into a few key findings (방향 전치사구)\n→ distill A into B = A를 B로 정제·압축하다 (비유적)\n→ key findings = 핵심 발견 사항"}
+   ]},
+  {w:"distinguished",i:"/dɪˈstɪŋɡwɪʃt/",p:"adj.",m:"저명한, 탁월한; 위엄 있는, 품위 있는",c:"distinguished",n:"cf. distinguish (구별하다; 두각을 나타내다); distinguishable (구별 가능한); = eminent, prominent",
+   e:["She is a distinguished professor with decades of research experience.","He looked distinguished in his grey suit and silver hair."],
+   x:[
+     {k:"그녀는 수십 년의 연구 경력을 가진 저명한 교수다.",s:"She (주어) + is (동사) + a distinguished professor (보어) + with decades of research experience (전치사구)\n→ distinguished = 저명한, 탁월한 (형용사)\n→ with decades of ~ = 수십 년의 ~을 가진"},
+     {k:"그는 회색 정장과 은발로 위엄 있어 보였다.",s:"He (주어) + looked distinguished (동사+형용사) + in his grey suit and silver hair (전치사구)\n→ look + adj. = ~해 보이다 (연결동사)\n→ distinguished = 위엄 있는, 품위 있는 (외모 묘사)"}
    ]},
   {w:"distract",i:"/dɪˈstrækt/",p:"v. [T]",m:"(주의를) 분산시키다, 딴 데로 돌리다; 집중을 방해하다",c:"distract",
    e:["Stop distracting me — I'm trying to study.","The loud music from next door distracted him from his work."],
@@ -973,6 +1197,12 @@ const V = [
      {k:"욕조 물이 빠지는 데 한참 걸린다.",s:"The bathtub (주어) + takes forever (동사+목적어) + to drain (to부정사, 목적)\n→ take forever to V = V하는 데 영원히 걸리다 (과장적 표현)\n→ drain [I] = 물이 빠져나가다"},
      {k:"그 긴 프로젝트는 감정적으로 지치게 만들었다.",s:"The long project (주어) + was emotionally draining (동사+부사+형용사)\n→ draining = 기력을 빼앗는, 지치게 하는 (현재분사 형용사)\n→ emotionally = 감정적으로"}
    ]},
+  {w:"dreamboat",i:"/ˈdriːmboʊt/",p:"n. [C]",m:"(구어) 이상형, 매우 잘생기거나 매력적인 사람",c:"dreamboat",n:"= dream boat; cf. my type (내 타입), eye candy (눈요기); 주로 긍정적·가볍게 사용",
+   e:["He's an absolute dreamboat — every girl in school likes him.","Back in the day, he was considered the dreamboat of Hollywood."],
+   x:[
+     {k:"그는 완전 이상형이야 — 학교 여자애들이 다 좋아해.",s:"He's an absolute dreamboat (주어+be동사+보어) — every girl in school likes him (설명)\n→ dreamboat = 이상형, 매력적인 남성 (구어)\n→ absolute = 완전한 (강조)"},
+     {k:"예전에 그는 할리우드의 이상형 배우로 여겨졌다.",s:"Back in the day (시간 부사구) + he was considered (수동태) + the dreamboat of Hollywood (보어)\n→ be considered ~ = ~로 여겨지다\n→ back in the day = 예전에, 옛날에"}
+   ]},
   {w:"duct",i:"/dʌkt/",p:"n. [C]",m:"도관, 덕트; (해부) 관",c:"duct",n:"cf. duct tape (덕트 테이프)",
    e:["The air duct needs to be cleaned at least once a year.","Tears travel through a small duct to reach the eye."],
    x:[
@@ -984,6 +1214,12 @@ const V = [
    x:[
      {k:"두 라이벌은 새벽 결투로 분쟁을 해결했다.",s:"The two rivals (주어) + settled their dispute (동사+목적어) + with a duel (수단 전치사구) + at dawn (시간 전치사구)\n→ settle a dispute = 분쟁을 해결하다\n→ at dawn = 새벽에"},
      {k:"결승전은 두 챔피언 사이의 손에 땀을 쥐게 하는 맞대결이었다.",s:"The final match (주어) + was (동사) + a nail-biting duel (보어) + between the two champions (전치사구)\n→ nail-biting = 손에 땀을 쥐게 하는\n→ between ~ = ~ 사이의 (명사 후치 수식)"}
+   ]},
+  {w:"dwell",i:"/dwɛl/",p:"v. [I]",m:"살다, 거주하다 (격식); (생각을) 곱씹다, 오래 머물다",c:"dwell",n:"cf. dwell on sth = ~에 대해 오래 생각하다, 집착하다; dwelling (n. 주거, 거처); don't dwell on it = 그것에 집착하지 마",
+   e:["She still dwells on what went wrong in the relationship.","Don't dwell on your mistakes — learn from them and move on."],
+   x:[
+     {k:"그녀는 아직도 그 관계에서 무엇이 잘못됐는지 곱씹는다.",s:"She (주어) + still dwells on (동사구+부사) + what went wrong in the relationship (간접의문문)\n→ dwell on ~ = ~에 대해 계속 생각하다, 집착하다\n→ what went wrong = 무엇이 잘못됐는지"},
+     {k:"실수에 집착하지 마 — 거기서 배우고 앞으로 나아가.",s:"Don't dwell on your mistakes (부정 명령) — learn from them (명령) + and move on (등위 명령)\n→ dwell on mistakes = 실수에 집착하다\n→ move on = 앞으로 나아가다, 털고 나아가다"}
    ]},
   {w:"dwindle",i:"/ˈdwɪndəl/",p:"v. [I]",m:"점점 줄어들다, 감소하다",c:"dwindle",
    e:["The population of the town has dwindled over the past decade.","His savings dwindled to almost nothing after months of unemployment."],
@@ -1051,6 +1287,12 @@ const V = [
    x:[
      {k:"얼마나 걸릴지 대략 알려줄 수 있어요?",s:"Can you give me (공손한 요청) + an estimate (목적어) + of how long it will take (전치사+간접의문문)?\n→ estimate = 추정치, 어림값 (명사)\n→ of how long it will take = 얼마나 걸릴지에 대한"},
      {k:"과학자들은 우주의 나이가 약 138억 년이라고 추정한다.",s:"Scientists (주어) + estimate (동사) + that the universe is about 13.8 billion years old (that절)\n→ estimate that S+V = ~라고 추정하다\n→ about = 약, 대략 (부사)"}
+   ]},
+  {w:"ethical",i:"/ˈɛθɪkəl/",p:"adj.",m:"윤리적인, 도덕적으로 옳은; 윤리에 관한",c:"ethical",n:"cf. ethics (n. 윤리학; 윤리 기준); ethically (부사); ≠ unethical (비윤리적인); ethical dilemma = 도덕적 딜레마",
+   e:["Is it ethical to test cosmetics on animals?","She made an ethical decision to report the fraud even though it cost her the job."],
+   x:[
+     {k:"동물에게 화장품을 시험하는 것이 윤리적인가?",s:"Is it ethical (가주어+be동사+형용사) + to test cosmetics on animals (진주어, to부정사)?\n→ ethical = 윤리적인 (형용사)\n→ test ~ on animals = 동물에게 ~을 시험하다"},
+     {k:"그녀는 일자리를 잃더라도 사기를 신고하는 윤리적인 결정을 내렸다.",s:"She (주어) + made an ethical decision (동사구) + to report the fraud (to부정사) + even though it cost her the job (양보 접속사절)\n→ ethical decision = 윤리적인 결정\n→ even though = ~임에도 불구하고 (양보)"}
    ]},
   {w:"ethnicity",i:"/ɛθˈnɪsɪti/",p:"n. [C/U]",m:"민족성, 인종적 배경",c:"ethnicity",
    e:["The survey asks respondents to identify their ethnicity.","People of all ethnicities were welcome at the festival."],
@@ -1166,6 +1408,12 @@ const V = [
      {k:"그 계획은 처음부터 심각한 결함이 있었다.",s:"The plan (주어) + was deeply flawed (동사+부사+형용사) + from the start (전치사구)\n→ deeply flawed = 심각하게 결함이 있는 (부사 강조)\n→ from the start = 처음부터"},
      {k:"모든 인간은 어떤 면에서 결점이 있다.",s:"Every human being (주어) + is flawed (동사+형용사) + in some way (전치사구)\n→ every = 모든 (단수 취급)\n→ in some way = 어떤 면에서"}
    ]},
+  {w:"flash",i:"/flæʃ/",p:"adj.",m:"(영국 구어) 화려하게 과시하는, 허세 부리는; 명품·고급스러운 척하는",c:"flash",n:"cf. flash (v.) = 번쩍이다; (n.) 섬광; flashy (adj.) = 요란하게 화려한; ≠ understated (절제된)",
+   e:["He drives a flash car but lives in a tiny flat.","She thought the restaurant was too flash for a casual dinner."],
+   x:[
+     {k:"그는 화려한 차를 몰지만 작은 아파트에 살아.",s:"He (주어) + drives a flash car (동사+형용사+목적어) + but lives in a tiny flat (역접+동사구)\n→ flash (adj.) = 허세 부리는, 과시적인 (영국 구어)\n→ flat = 아파트 (영국 영어)"},
+     {k:"그녀는 그 레스토랑이 가벼운 저녁 식사에는 너무 화려하다고 생각했다.",s:"She (주어) + thought (동사) + the restaurant was too flash (that절, 주어+동사+보어) + for a casual dinner (전치사구)\n→ too + adj. + for ~ = ~에 비해 너무 ~한\n→ casual dinner = 격식 없는 저녁 식사"}
+   ]},
   {w:"flawless",i:"/ˈflɔːləs/",p:"adj.",m:"흠없는, 완벽한, 나무랄 데 없는",c:"flawless",
    e:["Her performance was absolutely flawless.","He spoke flawless English despite growing up abroad."],
    x:[
@@ -1207,6 +1455,12 @@ const V = [
    x:[
      {k:"변기 내리는 거 잊지 마.",s:"Don't forget (부정 명령) + to flush the toilet (to부정사, 목적어)\n→ 'forget to V' = (앞으로) V할 것을 잊다\n→ flush the toilet = 변기를 내리다"},
      {k:"그가 그녀의 이름을 부르자 당황해서 얼굴이 빨개졌다.",s:"She (주어) + flushed (동사) + with embarrassment (원인 전치사구) + when he called her name (시간 접속사절)\n→ flush with ~ = ~ 때문에 얼굴이 붉어지다\n→ when = ~했을 때"}
+   ]},
+  {w:"for the most part",p:"phr.",m:"대체로, 주로, 대부분의 경우 (= mostly, generally, largely)",c:"for-the-most-part",n:"= mostly, largely, generally; cf. for the most part = 전체적으로 볼 때; by and large (전반적으로)",
+   e:["For the most part, the students were engaged and attentive.","The project went smoothly for the most part, with a few minor hiccups."],
+   x:[
+     {k:"대체로 학생들은 집중하고 열심히 참여했다.",s:"For the most part (부사구, 문두) + the students were engaged and attentive (주절)\n→ for the most part = 대체로, 주로\n→ engaged = 집중하는; attentive = 주의를 기울이는"},
+     {k:"몇 가지 사소한 문제들이 있긴 했지만 프로젝트는 대체로 순조롭게 진행됐다.",s:"The project (주어) + went smoothly (동사+부사) + for the most part (부사구) + with a few minor hiccups (부수 전치사구)\n→ go smoothly = 순조롭게 진행되다\n→ hiccups = (비유) 사소한 문제, 차질"}
    ]},
   {w:"forbid",i:"/fəˈbɪd/",p:"v. [T]",m:"금지하다, 허락하지 않다; (~하지 못하도록) 막다",c:"forbid",
    e:["Her parents forbade her from going out after dark.","Smoking is strictly forbidden on the premises."],
@@ -1257,6 +1511,12 @@ const V = [
      {k:"그녀는 마침내 의사가 되는 꿈을 이루었다.",s:"She (주어) + finally fulfilled (부사+동사) + her dream of becoming a doctor (목적어)\n→ fulfill a dream = 꿈을 이루다\n→ her dream of V-ing = ~하는 그녀의 꿈"}
    ]},
   // G
+  {w:"generate",i:"/ˈdʒɛnəreɪt/",p:"v. [T]",m:"생성하다, 만들어내다; (수익·관심 등을) 창출하다",c:"generate",n:"cf. generation (세대; 생성); generator (발전기); AI-generated = AI가 생성한",
+   e:["The solar panels generate enough electricity for the whole house.","The campaign generated a lot of interest online."],
+   x:[
+     {k:"태양광 패널이 집 전체에 충분한 전기를 생산한다.",s:"The solar panels (주어) + generate (동사) + enough electricity (목적어) + for the whole house (전치사구)\n→ generate = 생성하다, 만들어내다 [타동사]\n→ enough + 명사 + for ~ = ~에 충분한 …"},
+     {k:"그 캠페인은 온라인에서 큰 관심을 불러일으켰다.",s:"The campaign (주어) + generated (동사) + a lot of interest (목적어) + online (부사)\n→ generate interest = 관심을 불러일으키다, 창출하다\n→ online = 온라인에서 (부사)"}
+   ]},
   {w:"genuinely",i:"/ˈdʒɛnjuɪnli/",p:"adv.",m:"진심으로, 진정으로, 정말로",c:"genuinely",
    e:["She was genuinely surprised to hear the news.","I genuinely don't know what happened."],
    x:[
@@ -1275,11 +1535,23 @@ const V = [
      {k:"정신 차려 — 울어도 아무것도 해결 안 돼.",s:"Get a hold of yourself (명령문) — crying won't solve anything (이유)\n→ 'get a hold of yourself' = 자신을 통제하다, 정신 차리다\n→ crying won't solve anything = 울어도 아무것도 해결되지 않는다"},
      {k:"그녀는 면접장에 들어가기 전에 침착하라고 스스로에게 말했다.",s:"She (주어) + told herself (동사+재귀대명사) + to get a hold of herself (to부정사, 목적격 보어) + before walking into the interview (전치사구)\n→ tell oneself to V = 스스로에게 V하라고 말하다\n→ before walking into ~ = ~에 들어가기 전에"}
    ]},
+  {w:"get ahead",p:"phrv. [I]",m:"앞서 나가다, 성공하다; 우위를 점하다",c:"get-ahead",n:"cf. get ahead of ~ = ~보다 앞서다; ahead of the game = 유리한 위치에; get ahead in life = 인생에서 성공하다",
+   e:["Hard work and networking are key to getting ahead in this industry.","She stayed late to get ahead on the report before the deadline."],
+   x:[
+     {k:"이 업계에서 앞서 나가려면 열심히 일하고 인맥을 쌓는 게 중요해.",s:"Hard work and networking (주어) + are key (동사+보어) + to getting ahead in this industry (전치사구)\n→ get ahead = 앞서 나가다, 성공하다\n→ key to V-ing = ~하는 데 핵심적인"},
+     {k:"그녀는 마감 전에 보고서를 미리 진행해두려고 늦게까지 남았다.",s:"She (주어) + stayed late (동사+부사) + to get ahead on the report (to부정사, 목적) + before the deadline (전치사구)\n→ stay late = 늦게까지 남다\n→ get ahead on ~ = ~을 미리 진행해두다"}
+   ]},
   {w:"get along",p:"phrv. [I]",m:"잘 지내다, 사이좋게 지내다; 잘 해나가다",c:"get-along",
    e:["Do you get along with your coworkers?","Those two never got along — they fought about everything."],
    x:[
      {k:"동료들과 잘 지내?",s:"Do you get along (의문문+동사구) + with your coworkers (전치사구)?\n→ 'get along with ~' = ~와 잘 지내다\n→ coworkers = 직장 동료들"},
      {k:"저 둘은 한 번도 잘 지낸 적이 없어 — 모든 걸 갖고 싸웠거든.",s:"Those two (주어) + never got along (부정+동사구) — they fought about everything (설명절)\n→ never got along = 한 번도 잘 지내지 못했다\n→ fight about everything = 모든 것을 갖고 싸우다"}
+   ]},
+  {w:"get away with sth",p:"phrv. [T]",m:"(나쁜 짓을 하고도) 벌을 피하다, 무사히 넘어가다",c:"get-away-with",n:"cf. get away = 탈출하다, 떠나다; cf. get off = (처벌을) 모면하다; you can't get away with it forever = 언제까지나 무사할 순 없어",
+   e:["He cheated on the test and got away with it.","You won't get away with lying to me this time."],
+   x:[
+     {k:"그는 시험에서 부정행위를 했지만 무사히 넘어갔다.",s:"He (주어) + cheated on the test (동사구) + and got away with it (등위접속사+동사구)\n→ cheat on a test = 시험에서 부정행위를 하다\n→ get away with it = 그것을 하고도 벌을 피하다"},
+     {k:"이번엔 나한테 거짓말하고 무사하지 못할 거야.",s:"You (주어) + won't get away with (조동사 부정+동사구) + lying to me (동명사구) + this time (시간 부사구)\n→ get away with V-ing = ~하고도 무사히 넘어가다\n→ this time = 이번에는"}
    ]},
   {w:"get by",p:"phrv. [I]",m:"근근이 살아가다, 겨우 해나가다; 지나가다",c:"get-by",
    e:["We don't have much money, but we get by.","Can you move? I can't get by."],
@@ -1311,6 +1583,12 @@ const V = [
      {k:"헤어지고 나서 그는 그녀를 되찾기 위해 뭐든 하려 한다.",s:"He (주어) + will do anything (조동사+동사+목적어) + to get her back (to부정사, 목적) + after the breakup (전치사구)\n→ get sb back = (헤어진 사람을) 되찾다\n→ do anything to V = V하기 위해 뭐든 하다"},
      {k:"네가 나한테 한 짓에 반드시 앙갚음할 거야.",s:"I'll (주어+will) + get you back (동사구+목적어) + for what you did to me (전치사+관계절)\n→ get sb back (for ~) = (~에 대해) 복수하다, 앙갚음하다\n→ for what you did = 네가 한 것에 대해"}
    ]},
+  {w:"get sth out of your mind",p:"phr.",m:"(어떤 생각을) 머릿속에서 지우다, 잊어버리다; 생각을 떨쳐내다",c:"get-out-of-your-mind",n:"cf. can't get sth out of your mind = ~을 머릿속에서 지울 수 없다; put sth out of your mind = ~을 잊으려 하다",
+   e:["I can't get that song out of my mind — it's been stuck all day.","Try to get it out of your mind and focus on the present."],
+   x:[
+     {k:"그 노래가 머릿속에서 떠나질 않아 — 하루 종일 맴돌고 있어.",s:"I can't get that song (동사구+목적어) + out of my mind (전치사구) — it's been stuck all day (현재완료진행)\n→ get sth out of one's mind = ~을 머릿속에서 지우다\n→ be stuck = 박히다, 맴돌다"},
+     {k:"그 생각을 떨쳐내고 현재에 집중하도록 해봐.",s:"Try (명령) + to get it out of your mind (to부정사, 목적) + and focus on the present (등위 to부정사)\n→ get it out of your mind = 그것을 잊어버리다, 생각을 지우다\n→ focus on the present = 현재에 집중하다"}
+   ]},
   {w:"get to sb",p:"phrv. [T]",m:"~를 짜증나게 하다, ~에게 영향을 미치다",c:"get-to",
    e:["Don't let their comments get to you.","The constant noise was really starting to get to me."],
    x:[
@@ -1340,6 +1618,12 @@ const V = [
    x:[
      {k:"나 그 매니저한테 한소리 할 거야.",s:"I'm going to (near future) + give that manager (동사+간접목적어) + a piece of my mind (직접목적어, 관용구)\n→ 'give + 사람 + a piece of one's mind' = ~에게 거침없이 불만을 말하다\n→ be going to = ~할 것이다 (계획)"},
      {k:"그의 태도를 수년간 참아온 끝에 그녀는 마침내 그에게 한소리를 했다.",s:"She (주어) + finally gave him a piece of her mind (동사구) + after years of putting up with his attitude (전치사구)\n→ after years of V-ing = 수년간 ~한 끝에\n→ put up with = 참다, 견디다"}
+   ]},
+  {w:"give sb a run for their money",p:"phr.",m:"(경쟁자에게) 만만치 않은 상대가 되다, 막상막하로 경쟁하다",c:"give-a-run-for-money",n:"= put up strong competition; cf. a run for your money = 치열한 경쟁; 돈값을 하는 경험",
+   e:["The new team gave the champions a real run for their money.","She may be young, but she'll give any experienced lawyer a run for their money."],
+   x:[
+     {k:"신생 팀이 챔피언에게 만만치 않은 도전을 했다.",s:"The new team (주어) + gave the champions (동사+간접목적어) + a real run for their money (직접목적어, 관용구)\n→ give sb a run for their money = ~에게 강한 경쟁 상대가 되다\n→ a real run = 진짜 치열한 경쟁"},
+     {k:"그녀는 어릴지 모르지만 어떤 경험 많은 변호사와도 막상막하로 겨룰 거야.",s:"She (주어) + may be young (양보절) + but she'll give any experienced lawyer a run for their money (주절)\n→ may be ~ but ~ = ~일지 모르지만 ~이다\n→ any experienced lawyer = 어떤 경험 많은 변호사라도"}
    ]},
   {w:"given",i:"/ˈɡɪvən/",p:"prep.",m:"~을 고려하면, ~을 감안하면",c:"given",
    e:["Given the circumstances, we made the right decision.","Given that she's new, she's doing really well."],
@@ -1399,6 +1683,12 @@ const V = [
    x:[
      {k:"그녀는 발렌타인데이 직전에 차였다.",s:"She (주어) + got dumped (수동태, get+과거분사) + right before Valentine's Day (전치사구)\n→ get dumped = 차이다, 차임 당하다 (= be dumped, 구어체)\n→ right before = 바로 직전에"},
      {k:"그는 갑자기 차인 후 완전히 망연자실했다.",s:"He (주어) + was devastated (수동태+형용사) + after getting dumped (전치사+동명사) + out of nowhere (부사구)\n→ be devastated = 망연자실하다, 충격을 받다\n→ out of nowhere = 갑자기, 아무런 예고도 없이"}
+   ]},
+  {w:"gross",i:"/ɡroʊs/",p:"adj.",m:"역겨운, 징그러운 (구어); 심각한, 명백한; 총계의, 총(總)—",c:"gross",n:"cf. gross income/profit = 총수입/총이익; gross negligence = 중대한 과실; gross (v.) = 총수입을 올리다",
+   e:["That's gross — I can't believe you ate that.","The company grossed over a million dollars last quarter."],
+   x:[
+     {k:"진짜 역겨워 — 네가 그걸 먹었다니 믿기지 않아.",s:"That's gross (주어+be동사+형용사) — I can't believe (동사) + you ate that (that절)\n→ gross (adj.) = 역겨운, 징그러운 (구어체 감탄)\n→ can't believe (that) S+V = ~라니 믿기지 않다"},
+     {k:"회사는 지난 분기에 총 100만 달러 이상을 벌어들였다.",s:"The company (주어) + grossed over a million dollars (동사+목적어) + last quarter (시간 부사구)\n→ gross (v.) = 총수입을 올리다 [타동사]\n→ last quarter = 지난 분기"}
    ]},
   {w:"ground",i:"/ɡraʊnd/",p:"v. [T]",m:"(아이를) 외출 금지시키다; (비행기를) 결항·운항 정지시키다",c:"ground",
    e:["I'm grounded for a week because I came home late.","All flights were grounded due to the storm."],
@@ -1557,6 +1847,18 @@ const V = [
      {k:"군인들의 유해가 마침내 가족들에게 돌아왔다.",s:"The remains of the soldiers (주어) + were finally returned (수동태) + to their families (전치사구)\n→ remains = 유해, 유골 (항상 복수형)\n→ be returned to ~ = ~에게 돌아가다 (수동)"},
      {k:"고고학 발굴지에서 인간 유해가 발견됐다.",s:"Human remains (주어) + were discovered (수동태) + at the archaeological site (장소 전치사구)\n→ be discovered = 발견되다 (수동)\n→ archaeological site = 고고학 발굴지"}
    ]},
+  {w:"humanitarian",i:"/hjuːˌmænɪˈtɛəriən/",p:"adj. / n. [C]",m:"(adj.) 인도주의적인, 인류 복지를 위한; (n.) 인도주의자",c:"humanitarian",n:"cf. humanity (인류; 인간성); humanitarian aid/crisis = 인도주의적 지원/위기; humanitarianism (인도주의)",
+   e:["The organization provides humanitarian aid to refugees around the world.","She devoted her life to humanitarian causes."],
+   x:[
+     {k:"그 단체는 전 세계 난민들에게 인도주의적 지원을 제공한다.",s:"The organization (주어) + provides (동사) + humanitarian aid (목적어) + to refugees around the world (전치사구)\n→ humanitarian aid = 인도주의적 지원 (식량, 의약품, 피난처 등)\n→ refugees = 난민들"},
+     {k:"그녀는 인도주의적 대의를 위해 평생을 헌신했다.",s:"She (주어) + devoted her life (동사+목적어) + to humanitarian causes (전치사구)\n→ devote one's life to ~ = ~에 평생을 헌신하다\n→ causes = 대의, 목적 (복수)"}
+   ]},
+  {w:"humble oneself",p:"phr.",m:"자신을 낮추다, 겸손해지다; 굴욕을 감수하다",c:"humble",n:"cf. humble (adj. 겸손한; 초라한); humility (n. 겸손); swallow one's pride = 자존심을 굽히다",
+   e:["He had to humble himself and ask for help.","She humbled herself before the court and apologized publicly."],
+   x:[
+     {k:"그는 자신을 낮추고 도움을 구해야 했다.",s:"He (주어) + had to humble himself (조동사+동사+재귀목적어) + and ask for help (등위 동사구)\n→ humble oneself = 자신을 낮추다, 굴욕을 참다\n→ ask for help = 도움을 요청하다"},
+     {k:"그녀는 법정 앞에서 자신을 낮추고 공개적으로 사과했다.",s:"She (주어) + humbled herself (동사+재귀목적어) + before the court (전치사구) + and apologized publicly (등위절)\n→ humble oneself before ~ = ~ 앞에서 자신을 낮추다\n→ apologize publicly = 공개적으로 사과하다"}
+   ]},
   {w:"humiliate",i:"/hjuːˈmɪlieɪt/",p:"v. [T]",m:"굴욕감을 주다, 창피를 주다",c:"humiliate",
    e:["He humiliated her in front of the entire class.","She felt humiliated when they laughed at her mistake."],
    x:[
@@ -1629,11 +1931,29 @@ const V = [
      {k:"그 빈티지 카는 완벽한 상태였어 — 긁힌 자국 하나 없었어.",s:"The vintage car (주어) + was in mint condition (동사+전치사구) — not a scratch on it (부가설명)\n→ 'in mint condition' = 완벽한 상태의, 새것 같은\n→ not a scratch = 흠집 하나 없는"},
      {k:"나는 내 오래된 만화책을 완벽한 상태로 비싸게 팔았다.",s:"I (주어) + sold my old comic books (동사+목적어) + in mint condition (상태 전치사구) + for a lot of money (결과 전치사구)\n→ in mint condition = 흠집 없이 완벽한 상태로\n→ for a lot of money = 많은 돈을 받고"}
    ]},
+  {w:"in person",p:"phr.",m:"직접, 몸소; 실물로 (= personally, face to face)",c:"in-person",n:"cf. in-person (adj.) = 대면의, 직접 하는 (in-person meeting); ≠ online, virtually, remotely",
+   e:["You need to apply for the visa in person at the embassy.","She looks even more beautiful in person than in photos."],
+   x:[
+     {k:"대사관에 직접 방문해서 비자를 신청해야 해.",s:"You (주어) + need to apply for the visa (동사구+목적어) + in person (부사구) + at the embassy (장소 전치사구)\n→ in person = 직접, 몸소\n→ apply for ~ = ~을 신청하다"},
+     {k:"그녀는 사진보다 실물이 훨씬 더 아름다워.",s:"She (주어) + looks even more beautiful (동사+부사 강조+비교급) + in person (부사구) + than in photos (비교 전치사구)\n→ in person = 실물로 (직접 보면)\n→ even + 비교급 = 훨씬 더 ~한 (비교급 강조)"}
+   ]},
+  {w:"insecure",i:"/ˌɪnsɪˈkjʊər/",p:"adj.",m:"불안한, 자신감 없는; 불안정한, 안전하지 않은",c:"insecure",n:"cf. insecurity (n. 불안감; 불안정); ≠ secure (안전한; 자신감 있는); feel insecure about ~ = ~에 대해 불안을 느끼다",
+   e:["She feels insecure about her appearance despite being beautiful.","The job market has made many workers feel financially insecure."],
+   x:[
+     {k:"그녀는 아름다움에도 불구하고 외모에 대해 자신감이 없다.",s:"She (주어) + feels insecure (동사+형용사) + about her appearance (전치사구) + despite being beautiful (전치사+형용사)\n→ feel insecure about ~ = ~에 대해 불안을 느끼다\n→ despite = ~임에도 불구하고 (전치사)"},
+     {k:"취업 시장이 많은 노동자들을 재정적으로 불안하게 만들었다.",s:"The job market (주어) + has made (사역, 현재완료) + many workers (목적어) + feel financially insecure (목적보어)\n→ make + 목적어 + 동사원형 = ~가 …하게 만들다\n→ financially insecure = 재정적으로 불안정한"}
+   ]},
   {w:"inspiration",i:"/ˌɪnspɪˈreɪʃən/",p:"n. [C/U]",m:"영감; 영감을 주는 사람/것; 동기 부여",c:"inspiration",
    e:["She found her inspiration for the painting in nature.","He's been an inspiration to everyone around him."],
    x:[
      {k:"그녀는 자연에서 그림에 대한 영감을 얻었다.",s:"She (주어) + found (동사) + her inspiration (목적어) + for the painting (전치사구) + in nature (전치사구)\n→ find inspiration = 영감을 찾다/얻다\n→ in nature = 자연 속에서"},
      {k:"그는 주변 모든 사람에게 영감이 됐다.",s:"He's been (현재완료) + an inspiration (보어) + to everyone around him (전치사구)\n→ be an inspiration to ~ = ~에게 영감이 되다\n→ around him = 그 주변의 (명사 후치 수식)"}
+   ]},
+  {w:"instantly",i:"/ˈɪnstəntli/",p:"adv.",m:"즉시, 바로, 순식간에 (= immediately, at once)",c:"instantly",n:"cf. instant (adj. 즉각적인; n. 순간); instantaneous (순간적인); instantly recognizable = 바로 알아볼 수 있는",
+   e:["She recognized him instantly from his voice.","The medication worked almost instantly."],
+   x:[
+     {k:"그녀는 목소리만으로 그를 즉시 알아봤다.",s:"She (주어) + recognized him instantly (동사+목적어+부사) + from his voice (출처 전치사구)\n→ instantly = 즉시, 바로 (부사)\n→ from his voice = 목소리로, 목소리를 듣고"},
+     {k:"약이 거의 즉각적으로 효과를 나타냈다.",s:"The medication (주어) + worked (동사) + almost instantly (부사구)\n→ work = 효과가 있다, 작동하다\n→ almost instantly = 거의 즉각적으로 (부사 강조)"}
    ]},
   {w:"integrity",i:"/ɪnˈtɛɡrɪti/",p:"n. [U]",m:"청렴성, 도덕적 성실성; (구조물의) 완전성, 견고성",c:"integrity",
    e:["She refused to compromise her integrity, even when it cost her the promotion.","The structural integrity of the bridge was questioned after the earthquake."],
@@ -1653,11 +1973,23 @@ const V = [
      {k:"그는 자신과 다른 어떤 의견도 용납하지 못한다.",s:"He's (주어+be동사) + intolerant (형용사) + of any opinion that differs from his own (전치사+관계절)\n→ 'be intolerant of ~' = ~을 용납하지 못하다, 편협하다\n→ that differs from his own = 그의 것과 다른 (관계절)"},
      {k:"그녀는 유당 불내증이 있어서 유제품을 피한다.",s:"She's lactose intolerant (주어+보어) + so she avoids dairy products (결과절)\n→ lactose intolerant = 유당 불내증이 있는\n→ so = 그래서 (결과 접속사)"}
    ]},
+  {w:"intrusion",i:"/ɪnˈtruːʒən/",p:"n. [C/U]",m:"침입, 침해; (프라이버시·일 등에 대한) 방해, 간섭",c:"intrusion",n:"cf. intrude (v. 침입하다; 방해하다); intruder (침입자); intrusive (침해적인); sorry for the intrusion = 방해해서 미안해",
+   e:["She apologized for the intrusion and left quickly.","The new surveillance cameras feel like an intrusion on our privacy."],
+   x:[
+     {k:"그녀는 방해해서 미안하다고 말하고 빠르게 자리를 떴다.",s:"She (주어) + apologized for the intrusion (동사+전치사구) + and left quickly (등위절)\n→ apologize for ~ = ~에 대해 사과하다\n→ intrusion = 방해, 불쑥 들어옴"},
+     {k:"새 감시 카메라들은 우리 사생활을 침해하는 것처럼 느껴진다.",s:"The new surveillance cameras (주어) + feel like (동사+전치사) + an intrusion on our privacy (명사구)\n→ feel like ~ = ~처럼 느껴지다\n→ intrusion on privacy = 사생활 침해"}
+   ]},
   {w:"inventory",i:"/ˈɪnvəntɔːri/",p:"n. [C/U]",m:"재고 목록, 재고; (물건의) 목록",c:"inventory",
    e:["The store manager took inventory at the end of every month.","We're out of stock — the item isn't in our inventory."],
    x:[
      {k:"매장 매니저는 매달 말에 재고를 점검했다.",s:"The store manager (주어) + took inventory (동사+목적어) + at the end of every month (시간 전치사구)\n→ take inventory = 재고를 조사하다, 재고 목록을 작성하다\n→ at the end of every month = 매달 말에"},
      {k:"재고 없음 — 그 물건은 우리 재고에 없어요.",s:"We're out of stock (주어+형용사구) — the item isn't in our inventory (주어+부정+전치사구)\n→ out of stock = 재고가 없는\n→ in our inventory = 우리 재고에 (있는)"}
+   ]},
+  {w:"isolate",i:"/ˈaɪsəleɪt/",p:"v.",m:"고립시키다, 격리하다; 분리하다, 따로 떼어내다",c:"isolate",n:"cf. isolation (n. 고립, 격리; 분리); isolated (adj. 고립된, 외딴); in isolation = 고립 속에서, 따로 떼어놓고",
+   e:["The patient was isolated to prevent the spread of the disease.","It's hard to isolate one factor when so many variables are involved."],
+   x:[
+     {k:"질병의 확산을 막기 위해 환자는 격리되었다.",s:"The patient (주어) + was isolated (수동태) + to prevent the spread of the disease (목적 부정사구)\n→ isolate = 격리하다, 고립시키다\n→ to prevent ~ = ~을 막기 위해 (목적의 부정사)"},
+     {k:"그렇게 많은 변수가 관련될 때 한 가지 요인만 분리해내기는 어렵다.",s:"It's hard (가주어+형용사) + to isolate one factor (진주어) + when so many variables are involved (시간 부사절)\n→ isolate a factor = 요인을 따로 분리하다\n→ when ~ are involved = ~가 관련될 때"}
    ]},
   // J
   {w:"jerk",i:"/dʒɜːrk/",p:"n. [C]",m:"(구어) 멍청이, 나쁜 놈, 얄미운 사람; 갑작스러운 움직임, 홱 당김; v. 홱 잡아당기다",c:"jerk",
@@ -1716,11 +2048,23 @@ const V = [
      {k:"그 영화는 3시간이 넘도록 계속됐다.",s:"The movie (주어) + lasted (동사) + over three hours (기간 부사구)\n→ last [I] = 지속되다, 계속되다 [자동사]\n→ over three hours = 세 시간 이상"},
      {k:"이 신발은 나한테서 5년 동안 버텨줬어.",s:"These shoes (주어) + have lasted me (동사+간접목적어) + five years (기간)\n→ 'last + 사람 + 기간' = ~에게 …만큼 오래가다 [타동사]\n→ five years = 5년 동안"}
    ]},
+  {w:"laxative",i:"/ˈlæksətɪv/",p:"n. [C] / adj.",m:"(n.) 완하제, 변비약; (adj.) 배변을 촉진하는",c:"laxative",n:"cf. constipated (변비가 있는); constipation (변비); cf. stool softener (변 연화제); over-the-counter = 처방전 없이 살 수 있는",
+   e:["The doctor recommended a mild laxative to relieve her constipation.","Prunes have a natural laxative effect."],
+   x:[
+     {k:"의사는 그녀의 변비를 해소하기 위해 순한 완하제를 권했다.",s:"The doctor (주어) + recommended (동사) + a mild laxative (목적어) + to relieve her constipation (to부정사, 목적)\n→ recommend ~ = ~을 권하다, 추천하다\n→ relieve constipation = 변비를 해소하다"},
+     {k:"자두는 자연적인 완하 효과가 있다.",s:"Prunes (주어) + have (동사) + a natural laxative effect (목적어)\n→ laxative (adj.) = 배변을 촉진하는\n→ prunes = 말린 자두 (변비 완화 효과로 알려진)"}
+   ]},
   {w:"lay off / lay sb off",p:"phrv. [T]",m:"해고하다; 그만하다, 손 대지 않다",c:"lay-off",
    e:["The factory had to lay off fifty workers due to falling sales.","Lay off the sarcasm — it's not helping anyone."],
    x:[
      {k:"판매 감소로 인해 공장은 직원 50명을 해고해야 했다.",s:"The factory (주어) + had to lay off fifty workers (조동사+동사구+목적어) + due to falling sales (이유 전치사구)\n→ lay off ~ = ~을 해고하다 [타동사]\n→ due to ~ = ~ 때문에"},
      {k:"비꼬는 것 좀 그만해 — 아무한테도 도움이 안 돼.",s:"Lay off the sarcasm (명령문) — it's not helping anyone (현재진행 부정)\n→ lay off ~ = ~을 그만하다, ~에 손 대지 않다\n→ not helping anyone = 아무에게도 도움이 되지 않는다"}
+   ]},
+  {w:"legitimate",i:"/lɪˈdʒɪtɪmɪt/",p:"adj.",m:"합법적인, 적법한; 정당한, 타당한; 적자(嫡子)의",c:"legitimate",n:"cf. illegitimate (불법의; 혼외 출생의); legitimize (합법화하다); legitimacy (적법성)",
+   e:["Is this a legitimate business or some kind of scam?","She had a legitimate reason for missing the meeting."],
+   x:[
+     {k:"이게 합법적인 사업체야 아니면 일종의 사기야?",s:"Is this a legitimate business (의문문+보어) + or some kind of scam (등위절)?\n→ legitimate = 합법적인, 정당한 (형용사)\n→ scam = 사기, 속임수"},
+     {k:"그녀는 회의에 빠진 정당한 이유가 있었다.",s:"She (주어) + had (동사) + a legitimate reason (목적어) + for missing the meeting (전치사+동명사구)\n→ legitimate reason = 정당한 이유\n→ for V-ing = ~한 것에 대한 (이유·원인의 전치사)"}
    ]},
   {w:"let me get this straight",p:"phr.",m:"(내가 제대로 이해한 건지) 다시 확인해 볼게, 정리하자면",c:"let-me-get-this-straight",
    e:["Let me get this straight — you want me to do it for free?","Wait, let me get this straight: he quit the job before finding another one?"],
@@ -1733,6 +2077,12 @@ const V = [
    x:[
      {k:"그의 상사는 마감을 못 지킨 것으로 그를 호되게 혼냈다.",s:"His boss (주어) + really let him have it (동사구+목적어) + for missing the deadline (이유 전치사구)\n→ 'let ~ have it' = ~를 호되게 혼내다, 꾸짖다 (구어)\n→ for missing the deadline = 마감을 놓친 것에 대해"},
      {k:"그가 거짓말해왔다는 걸 알게 됐을 때 그녀는 그를 강하게 따졌다.",s:"She (주어) + let him have it (동사구+목적어) + when she found out he'd been lying (시간 접속사절)\n→ 'let ~ have it' = 강하게 꾸짖다, 맹공을 퍼붓다\n→ find out (that) ~ = ~임을 알게 되다"}
+   ]},
+  {w:"Let's hear it for",p:"phr.",m:"~에게 박수를 보내자, ~에게 갈채를 보내자; ~를 환영하자",c:"hear",n:"주로 무대·행사에서 사용: Let's hear it for + 사람/대상 = ~에게 박수 / 환호를 보내주세요; 격식 없는 구어 표현",
+   e:["Let's hear it for tonight's special guest — Dr. Kim!","Let's hear it for all the volunteers who made this event possible!"],
+   x:[
+     {k:"오늘 밤 특별 게스트인 김 박사님께 박수를 보내 드립시다!",s:"Let's hear it for (청유 동사구) + tonight's special guest (목적어) — Dr. Kim (동격)\n→ Let's hear it for ~ = ~에게 박수·갈채를 보내자\n→ tonight's special guest = 오늘 밤 특별 게스트 (소유격)"},
+     {k:"이 행사를 가능하게 해준 모든 자원봉사자들에게 박수를 보냅시다!",s:"Let's hear it for (청유 동사구) + all the volunteers (목적어) + who made this event possible (관계절)\n→ who made this event possible = 이 행사를 가능하게 해준 (관계대명사절)\n→ make + 목적어 + 형용사 = ~을 …하게 만들다"}
    ]},
   {w:"lift",i:"/lɪft/",p:"v. [T]",m:"들어 올리다; (금지령·규제를) 해제하다; (기분을) 높이다",c:"lift",n:"cf. lift the ban (금지령을 해제하다), morale lift (사기 진작)",
    e:["He lifted the heavy box onto the shelf.","The government lifted the travel ban last month."],
@@ -1868,6 +2218,12 @@ const V = [
      {k:"그는 미성년자를 추행한 혐의로 체포됐다.",s:"He (주어) + was arrested (수동태) + for molesting a minor (이유 전치사구)\n→ be arrested for V-ing = ~한 혐의로 체포되다\n→ a minor = 미성년자"},
      {k:"피해자는 추행을 당한 지 수년 만에 마침내 신고하러 나섰다.",s:"The victim (주어) + finally came forward (동사구) + years after being molested (전치사+동명사 수동)\n→ come forward = (사건에 대해) 신고하다, 나서다\n→ after being molested = 추행당한 후"}
    ]},
+  {w:"monetize",i:"/ˈmʌnɪtaɪz/",p:"v. [T]",m:"수익화하다, 돈으로 바꾸다; (콘텐츠·자산 등을) 수익 창출에 활용하다",c:"monetize",n:"cf. monetization (n. 수익화); monetize a channel/blog/app = 채널/블로그/앱을 수익화하다",
+   e:["She managed to monetize her YouTube channel after gaining a million subscribers.","The company is looking for new ways to monetize its user data."],
+   x:[
+     {k:"그녀는 구독자 백만 명을 달성한 후 유튜브 채널을 수익화하는 데 성공했다.",s:"She (주어) + managed to monetize (동사+부정사) + her YouTube channel (목적어) + after gaining a million subscribers (시간 전치사구)\n→ manage to V = 가까스로[성공적으로] ~하다\n→ monetize a channel = 채널을 수익화하다"},
+     {k:"그 회사는 사용자 데이터를 수익화할 새로운 방법을 찾고 있다.",s:"The company (주어) + is looking for (동사구, 현재진행) + new ways to monetize its user data (목적어+부정사 형용사적 수식)\n→ look for ~ = ~를 찾다\n→ ways to V = ~할 방법들 (부정사의 형용사적 용법)"}
+   ]},
   {w:"monstrosity",i:"/mɒnˈstrɒsɪti/",p:"n. [C]",m:"흉물, 괴물 같은 것; 기형적으로 못생긴 것",c:"monstrosity",
    e:["The new skyscraper is an absolute monstrosity — it ruins the skyline.","They called the old building a monstrosity and demanded it be torn down."],
    x:[
@@ -1940,6 +2296,12 @@ const V = [
    x:[
      {k:"그는 노력도 안 하고 모든 시험을 다 잘 봤던 반의 공부벌레였다.",s:"He (주어) + was (동사) + the class nerdo (보어) + who aced every test without trying (관계절)\n→ ace ~ = ~을 아주 잘 해내다, 만점을 받다\n→ without trying = 노력 없이"},
      {k:"왜 이래, 그렇게 공부벌레처럼 굴지 마 — 파티에 와!",s:"Come on (감탄사) + don't be such a nerdo (부정 명령) — come to the party! (명령)\n→ Come on = 제발, 왜 이래 (상대방 설득)\n→ such a ~ = 그런 ~"}
+   ]},
+  {w:"newsworthy",i:"/ˈnjuːzˌwɜːrði/",p:"adj.",m:"보도할 가치가 있는, 뉴스거리가 되는",c:"newsworthy",n:"cf. noteworthy (주목할 만한); praiseworthy (칭찬할 만한); -worthy suffix = ~할 가치가 있는",
+   e:["The story wasn't considered newsworthy enough to make the front page.","Celebrity gossip rarely qualifies as truly newsworthy."],
+   x:[
+     {k:"그 기사는 1면을 장식할 만큼 보도 가치가 있다고 여겨지지 않았다.",s:"The story (주어) + wasn't considered (수동태) + newsworthy enough (형용사+부사) + to make the front page (to부정사, 결과)\n→ newsworthy = 보도할 가치가 있는\n→ adj. + enough to V = V하기에 충분히 ~한"},
+     {k:"연예인 가십은 진정으로 뉴스거리가 되는 경우가 드물다.",s:"Celebrity gossip (주어) + rarely qualifies as (동사+부사+전치사) + truly newsworthy (부사+형용사)\n→ qualify as ~ = ~로 인정받다, ~에 해당하다\n→ rarely = 드물게, 좀처럼 ~않다"}
    ]},
   {w:"nip",i:"/nɪp/",p:"v. [T]",m:"꼬집다, 살짝 깨물다; 싹을 자르다; (구어) 빠르게 가다",c:"nip",n:"cf. nip it in the bud (싹을 자르다, 초기에 막다)",
    e:["The dog nipped her finger, but didn't break the skin.","We need to nip this problem in the bud before it gets worse."],
@@ -2045,6 +2407,12 @@ const V = [
      {k:"그녀는 보안 시스템의 허를 찌르고 들어가는 방법을 찾아냈다.",s:"She (주어) + outthought the security system (동사+목적어) + and found a way in (등위 접속)\n→ outthought = outthink의 과거형 (불규칙)\n→ find a way in = 들어가는 방법을 찾다"}
    ]},
   // P
+  {w:"pact",i:"/pækt/",p:"n. [C]",m:"협정, 조약; 약속, 맹약",c:"pact",n:"cf. make a pact = 약속을 맺다, 협정을 체결하다; suicide pact = 동반자살 협약; peace pact = 평화 협정",
+   e:["The two countries signed a pact to reduce nuclear weapons.","The friends made a pact never to reveal each other's secrets."],
+   x:[
+     {k:"두 나라는 핵무기를 줄이는 협정에 서명했다.",s:"The two countries (주어) + signed (동사) + a pact (목적어) + to reduce nuclear weapons (to부정사, 목적)\n→ sign a pact = 협정에 서명하다\n→ to reduce ~ = ~를 줄이기 위해 (목적의 부정사)"},
+     {k:"친구들은 서로의 비밀을 절대 밝히지 않겠다는 약속을 했다.",s:"The friends (주어) + made a pact (동사+목적어) + never to reveal each other's secrets (to부정사구)\n→ make a pact = 약속[맹약]을 맺다\n→ never to reveal = 절대 밝히지 않겠다는 (to부정사의 부정)"}
+   ]},
   {w:"pancreas",i:"/ˈpæŋkriəs/",p:"n. [C]",m:"췌장 (소화 효소와 인슐린을 분비하는 기관)",c:"pancreas",n:"cf. pancreatic (췌장의), pancreatic cancer (췌장암)",
    e:["The pancreas produces insulin to regulate blood sugar.","Pancreatic cancer is often difficult to detect in its early stages."],
    x:[
@@ -2129,6 +2497,12 @@ const V = [
      {k:"그녀는 방 안의 긴장감을 즉시 알아챘다.",s:"She (주어) + picked up on the tension (동사구+목적어) + in the room (전치사구) + immediately (부사)\n→ 'pick up on ~' = ~을 알아채다, 감지하다\n→ tension in the room = 방 안의 긴장감"},
      {k:"아이들은 어른보다 언어를 더 빠르게 습득한다.",s:"Kids (주어) + pick up on languages (동사구+목적어) + faster than adults (비교 부사구)\n→ pick up on ~ = ~을 습득하다, 배우다\n→ faster than adults = 어른보다 더 빠르게"}
    ]},
+  {w:"piece",i:"/piːs/",p:"n. [C]",m:"조각, 부분; 한 편(의 작품·글); 하나, 한 개",c:"piece",n:"cf. a piece of ~ = ~의 한 조각[편]; piece of advice/news/information = 조언/소식/정보 한 가지; tear/break to pieces = 산산조각 내다",
+   e:["She ate a piece of cake and immediately felt better.","He gave me a really useful piece of advice about the interview."],
+   x:[
+     {k:"그녀는 케이크 한 조각을 먹었더니 바로 기분이 나아졌다.",s:"She (주어) + ate a piece of cake (동사+목적어) + and immediately felt better (등위절)\n→ a piece of cake = 케이크 한 조각; (관용) 식은 죽 먹기\n→ feel better = 기분이 나아지다"},
+     {k:"그는 면접에 대한 정말 유용한 조언을 해줬다.",s:"He (주어) + gave me (동사+간접목적어) + a really useful piece of advice (직접목적어) + about the interview (전치사구)\n→ a piece of advice = 조언 한 가지 (불가산 명사 advice를 셀 때 사용)\n→ about the interview = 면접에 관해"}
+   ]},
   {w:"pin sth on",p:"phrv. [T]",m:"~에게 죄를 뒤집어씌우다, ~의 탓으로 돌리다",c:"pin-on",
    e:["They tried to pin the blame on the new employee.","You can't pin this on me — I wasn't even there."],
    x:[
@@ -2182,6 +2556,18 @@ const V = [
    x:[
      {k:"아이들 앞에서 그렇게 욕을 입에 달고 살지 마.",s:"Don't be such a potty mouth (부정 명령) + in front of the kids (전치사구)\n→ Don't be such a ~ = 그런 ~처럼 굴지 마\n→ in front of the kids = 아이들 앞에서"},
      {k:"내 남동생은 완전 욕쟁이야 — TV에서 나쁜 말을 다 배웠거든.",s:"My little brother (주어) + is a total potty mouth (동사+보어) — he learned all the bad words from TV (설명)\n→ total = 완전한 (강조)\n→ from TV = TV에서 (출처)"}
+   ]},
+  {w:"prescribe",i:"/prɪˈskraɪb/",p:"v. [T]",m:"(약을) 처방하다; (규칙·방법을) 규정하다, 지정하다",c:"prescribe",n:"cf. prescription (처방전; 처방약); prescribed (규정된); over-the-counter = 처방전 없이 살 수 있는",
+   e:["The doctor prescribed antibiotics for her infection.","The law prescribes a minimum sentence for this offense."],
+   x:[
+     {k:"의사는 그녀의 감염증에 항생제를 처방했다.",s:"The doctor (주어) + prescribed (동사) + antibiotics (목적어) + for her infection (전치사구)\n→ prescribe = 처방하다 [타동사]\n→ antibiotics = 항생제 (복수형)"},
+     {k:"법은 이 범죄에 대해 최소 형량을 규정하고 있다.",s:"The law (주어) + prescribes (동사) + a minimum sentence (목적어) + for this offense (전치사구)\n→ prescribe = 규정하다, 지정하다 (공식적 맥락)\n→ minimum sentence = 최소 형량"}
+   ]},
+  {w:"primary",i:"/ˈpraɪmɛri/",p:"adj.",m:"주된, 주요한; 기본적인, 초등의",c:"primary",n:"cf. primarily (주로, 주로는); primary school = 초등학교; primary source = 1차 자료; ≠ secondary (이차적인)",
+   e:["The primary goal of this project is to reduce costs.","She works as a teacher at a primary school."],
+   x:[
+     {k:"이 프로젝트의 주된 목표는 비용을 절감하는 것이다.",s:"The primary goal (주어) + of this project (전치사구) + is (동사) + to reduce costs (to부정사, 보어)\n→ primary = 주된, 가장 중요한 (형용사)\n→ to reduce costs = 비용을 줄이는 것 (to부정사, 명사적 용법)"},
+     {k:"그녀는 초등학교 교사로 일한다.",s:"She (주어) + works (동사) + as a teacher (자격 전치사구) + at a primary school (장소 전치사구)\n→ work as ~ = ~로 일하다\n→ primary school = 초등학교 (영국 영어; 미국 = elementary school)"}
    ]},
   {w:"primo",i:"/ˈpriːmoʊ/",p:"adj.",m:"(속어) 최고의, 일류의, 뛰어난",
    e:["This is primo quality stuff — don't waste it.","He got primo seats for the concert."],
@@ -2243,6 +2629,18 @@ const V = [
      {k:"우리는 숲에서 1킬로그램이 넘는 거대한 말불버섯을 발견했다.",s:"We (주어) + found (동사) + a giant puffball (목적어) + in the forest (장소) + that weighed over a kilogram (관계절)\n→ puffball = 말불버섯 (둥근 형태의 버섯)\n→ weigh over ~ = ~ 이상 무게가 나가다"},
      {k:"그 아기는 너무 통통해서 작은 공처럼 보였다.",s:"The baby (주어) + was so chubby (동사+부사+형용사) + she looked like a little puffball (결과절)\n→ so ~ that/she = 너무 ~해서 ~이다 (that 생략)\n→ look like ~ = ~처럼 보이다"}
    ]},
+  {w:"pull in",p:"phrv.",m:"(차·기차 등이) 도착하다, 들어오다; (수입 등을) 벌어들이다; (군중 등을) 끌어 모으다",c:"pull-in",n:"cf. pull into (a station/driveway 등) = ~에 들어오다; pull in a crowd = 사람들을 끌어 모으다",
+   e:["The train pulled in right on time.","The new restaurant is really pulling in the crowds."],
+   x:[
+     {k:"기차가 정각에 도착했다.",s:"The train (주어) + pulled in (동사구) + right on time (부사구)\n→ pull in = (기차·차 등이) 들어오다, 도착하다\n→ right on time = 정확히 제시간에 (right = 강조 부사)"},
+     {k:"새 식당이 정말 사람들을 끌어 모으고 있다.",s:"The new restaurant (주어) + is really pulling in (동사구, 현재진행) + the crowds (목적어)\n→ pull in the crowds = 사람들을 끌어 모으다\n→ really = 정말로 (강조 부사)"}
+   ]},
+  {w:"pull sth off",p:"phrv. [T]",m:"(어려운 일을) 해내다, 성공시키다",c:"pull-off",n:"cf. pull it off = 그것을 해내다; pull off a deal/stunt/win = 거래/묘기/승리를 이뤄내다",
+   e:["I can't believe she pulled it off — the presentation was flawless.","They managed to pull off the heist without anyone noticing."],
+   x:[
+     {k:"그녀가 해냈다는 게 믿기지 않아 — 발표가 완벽했어.",s:"I can't believe (주어+동사+접속사 생략) + she pulled it off (절) — the presentation was flawless (부연)\n→ pull it off = 그것을 해내다, 성공시키다\n→ flawless = 흠 없는, 완벽한"},
+     {k:"그들은 아무도 눈치채지 못한 채 강도질을 해내는 데 성공했다.",s:"They (주어) + managed to pull off the heist (동사+부정사+목적어) + without anyone noticing (전치사+동명사구)\n→ manage to V = 가까스로 ~을 해내다\n→ without anyone noticing = 아무도 눈치채지 못한 채"}
+   ]},
   {w:"put/set someone straight",p:"phr.",m:"~에게 올바른 사실을 알려주다, 바로잡아 주다",c:"set-straight",
    e:["Let me set you straight on a few things.","She put him straight about what really happened that night."],
    x:[
@@ -2292,6 +2690,12 @@ const V = [
    x:[
      {k:"이 식당을 10점 만점에 몇 점을 줄 것 같아?",s:"How would you rate this restaurant (의문문+동사+목적어) + out of ten (전치사구)?\n→ 'rate ~ out of ~' = ~ 만점에 ~점으로 평가하다\n→ How would you rate ~? = ~을 어떻게 평가하겠어?"},
      {k:"그 영화는 약한 폭력 장면으로 인해 PG-13 등급을 받았다.",s:"The movie (주어) + was rated PG-13 (수동태+보어) + for mild violence (이유 전치사구)\n→ be rated ~ = ~등급을 받다 (수동)\n→ for mild violence = 약한 폭력 장면 때문에"}
+   ]},
+  {w:"ravage",i:"/ˈrævɪdʒ/",p:"v. [T]",m:"황폐화시키다, 파괴하다; (병·전쟁 등이) 심각한 피해를 입히다",c:"ravage",n:"cf. ravages (n. 파괴, 황폐; the ravages of time/war = 세월/전쟁의 파괴적 영향); ravaged (adj. 황폐해진)",
+   e:["The hurricane ravaged the coastal town, leaving thousands homeless.","The disease ravaged the population before a vaccine was developed."],
+   x:[
+     {k:"허리케인이 해안 마을을 휩쓸어 수천 명을 집 없이 만들었다.",s:"The hurricane (주어) + ravaged (동사) + the coastal town (목적어) + leaving thousands homeless (분사구문)\n→ ravage = 파괴하다, 황폐화시키다\n→ leaving ~ homeless = ~를 노숙 상태로 만들며 (결과의 분사구문)"},
+     {k:"백신이 개발되기 전에 그 질병은 주민들에게 심각한 피해를 입혔다.",s:"The disease (주어) + ravaged (동사) + the population (목적어) + before a vaccine was developed (시간 부사절)\n→ ravage the population = 주민들을 황폐하게 만들다\n→ before ~ was developed = ~가 개발되기 전에"}
    ]},
   {w:"reason with sb",p:"phrv. [T]",m:"~와 이성적으로 대화하다, ~을 논리적으로 설득하다",c:"reason-with",
    e:["You can't reason with someone who isn't willing to listen.","She tried to reason with her teenage son, but he wouldn't budge."],
@@ -2450,6 +2854,12 @@ const V = [
      {k:"장군이 지나가자 병사들이 경례했다.",s:"The soldiers (주어) + saluted (동사) + as the general walked past (시간 부사절)\n→ salute [I] = 경례하다\n→ as ~ = ~할 때, ~하면서 (시간 접속사)"},
      {k:"그 영화는 전시 간호사들의 용기에 경의를 표한다.",s:"The film (주어) + salutes (동사) + the courage of wartime nurses (목적어)\n→ salute [T] = ~에 경의를 표하다, 찬사를 보내다\n→ wartime nurses = 전시 간호사"}
    ]},
+  {w:"sarcasm",i:"/ˈsɑːrkæzəm/",p:"n. [U]",m:"빈정거림, 비꼬기, 냉소적인 말",c:"sarcasm",n:"cf. sarcastic (adj. 빈정대는, 비꼬는); sarcastically (adv.); irony (아이러니; 반어법); cf. lay off the sarcasm = 비꼬는 것 좀 그만해",
+   e:["'Oh great, another Monday,' she said with heavy sarcasm.","His sarcasm was lost on her — she took it literally."],
+   x:[
+     {k:"'아, 정말, 또 월요일이네,' 그녀가 잔뜩 빈정대며 말했다.",s:"'Oh great, another Monday' (인용구) + she said (주어+동사) + with heavy sarcasm (전치사구)\n→ with heavy sarcasm = 잔뜩 빈정대며 (부사구)\n→ Oh great = 비꼬는 표현 ('정말 대단해' 의 반어)"},
+     {k:"그의 비꼬는 말이 그녀에게는 통하지 않았다 — 그녀는 말 그대로 받아들였다.",s:"His sarcasm (주어) + was lost on her (수동태+전치사구) — she took it literally (설명절)\n→ be lost on sb = ~에게 통하지 않다, 이해되지 않다\n→ take it literally = 문자 그대로 받아들이다"}
+   ]},
   {w:"saturate",i:"/ˈsætʃəreɪt/",p:"v. [T]",m:"흠뻑 적시다; 포화시키다",c:"saturate",
    e:["The rain saturated the ground within minutes.","The market is saturated with cheap imitations of the product."],
    x:[
@@ -2588,6 +2998,12 @@ const V = [
      {k:"그는 자정 이후에 몰래 집을 빠져나갔다.",s:"He (주어) + sneaked out of the house (동사구+전치사구) + after midnight (시간 전치사구)\n→ sneak out of ~ = ~에서 몰래 빠져나가다 [자동사]\n→ after midnight = 자정 이후에"},
      {k:"그녀는 병에서 초콜릿 한 조각을 슬쩍 꺼냈다.",s:"She (주어) + sneaked (동사) + a piece of chocolate (목적어) + from the jar (전치사구)\n→ sneak [T] = 슬쩍 가져가다\n→ a piece of ~ = ~ 한 조각"}
    ]},
+  {w:"sneaky",i:"/ˈsniːki/",p:"adj.",m:"교활한, 몰래 하는; 비열한, 음흉한",c:"sneaky",n:"cf. sneak (v./n.); sneakily (adv. 몰래, 교활하게); a sneaky move = 비열한 수; sneaky suspicion = 어렴풋한 의심",
+   e:["That was a sneaky move — you tricked us all!","I have a sneaky suspicion that he's not telling the whole truth."],
+   x:[
+     {k:"그건 교활한 짓이었어 — 우리 모두를 속인 거잖아!",s:"That (주어) + was a sneaky move (동사+보어) — you tricked us all (부연)\n→ sneaky = 교활한, 몰래 하는 (형용사)\n→ trick sb = ~를 속이다"},
+     {k:"그가 진실을 전부 말하고 있지 않다는 어렴풋한 느낌이 든다.",s:"I (주어) + have a sneaky suspicion (동사+목적어) + that he's not telling the whole truth (that절)\n→ sneaky suspicion = 어렴풋한/은근한 의심\n→ the whole truth = 모든 진실"}
+   ]},
   {w:"sob",i:"/sɒb/",p:"v. [I]",m:"흐느끼다, 엉엉 울다",c:"sob",n:"cf. sob story (동정심을 유발하는 슬픈 사연)",
    e:["She sobbed quietly into her pillow all night.","He was sobbing so hard he could barely speak."],
    x:[
@@ -2678,6 +3094,12 @@ const V = [
      {k:"그 정도 경험을 가진 선수를 상대로는 승산이 없어.",s:"You (주어) + don't stand a chance (동사구 부정) + against a player with that much experience (전치사구)\n→ 'stand a chance' = 가능성이 있다, 승산이 있다\n→ against ~ = ~을 상대로"},
      {k:"그녀는 실제로 챔피언십 우승 가능성이 있어.",s:"She (주어) + actually stands a chance (부사+동사구) + of winning the championship (전치사+동명사)\n→ stand a chance of V-ing = ~할 가능성이 있다\n→ actually = 실제로 (강조)"}
    ]},
+  {w:"stand guard",p:"phr.",m:"경비를 서다, 보초를 서다 (= stand watch)",c:"stand-guard",n:"cf. guard duty = 경비 근무; be on guard = 경계 중이다; guard dog = 경비견",
+   e:["Two soldiers stood guard at the entrance to the base.","She stood guard over the sleeping children all night."],
+   x:[
+     {k:"두 명의 병사가 기지 입구에서 보초를 섰다.",s:"Two soldiers (주어) + stood guard (동사구) + at the entrance to the base (장소 전치사구)\n→ stand guard = 보초를 서다, 경비를 서다\n→ entrance to ~ = ~의 입구"},
+     {k:"그녀는 밤새 잠든 아이들 곁을 지켰다.",s:"She (주어) + stood guard (동사구) + over the sleeping children (전치사+명사구) + all night (시간 부사구)\n→ stand guard over ~ = ~을 지키다, ~을 경호하다\n→ all night = 밤새 (시간 부사구)"}
+   ]},
   {w:"stand out",p:"phrv. [I]",m:"두드러지다, 눈에 띄다, 돋보이다",c:"stand-out",
    e:["Her red dress made her stand out in the crowd.","He always found ways to stand out from the competition."],
    x:[
@@ -2743,6 +3165,12 @@ const V = [
    x:[
      {k:"피해를 입은 마을은 전 세계로부터 구호를 받았다.",s:"The stricken village (주어) + received (동사) + aid (목적어) + from around the world (전치사구)\n→ stricken = 피해를 입은, 재난을 당한 (형용사)\n→ aid from around the world = 전 세계의 구호"},
      {k:"그녀는 개를 잃은 후 깊은 슬픔에 빠졌다.",s:"She (주어) + was stricken (수동태) + with grief (전치사구) + after losing her dog (전치사+동명사)\n→ 'be stricken with ~' = ~에 시달리다, ~에 빠지다\n→ after losing ~ = ~을 잃은 후"}
+   ]},
+  {w:"stroke",i:"/stroʊk/",p:"n. [C]",m:"뇌졸중; (수영의) 영법, 스트로크; (붓·펜의) 획; v. 쓰다듬다",c:"stroke",n:"cf. have a stroke = 뇌졸중이 오다; stroke of luck/genius = 행운/천재적인 발상; stroke order = 획순",
+   e:["He suffered a stroke and lost the ability to speak temporarily.","She stroked the cat gently as it fell asleep in her lap."],
+   x:[
+     {k:"그는 뇌졸중을 앓아 일시적으로 말하는 능력을 잃었다.",s:"He (주어) + suffered a stroke (동사+목적어) + and lost the ability to speak (등위절) + temporarily (부사)\n→ suffer a stroke = 뇌졸중을 겪다\n→ lose the ability to V = ~하는 능력을 잃다"},
+     {k:"그녀는 고양이가 무릎에서 잠드는 동안 부드럽게 쓰다듬었다.",s:"She (주어) + stroked the cat gently (동사+목적어+부사) + as it fell asleep (시간 접속사절) + in her lap (전치사구)\n→ stroke [T] = 쓰다듬다\n→ fall asleep = 잠이 들다"}
    ]},
   {w:"stuck",i:"/stʌk/",p:"adj.",m:"움직일 수 없는, 갇힌; (문제에) 막힌; 벗어나지 못하는",c:"stuck",
    e:["The car got stuck in the mud.","I'm stuck on question three — can you help me?"],
@@ -2913,6 +3341,12 @@ const V = [
      {k:"늑대들은 냄새로 자신들의 영역을 표시했다.",s:"The wolves (주어) + marked their territory (동사+목적어) + by scent (수단 전치사구)\n→ mark one's territory = 영역을 표시하다\n→ by scent = 냄새로 (수단)"},
      {k:"화난 고객 응대는 이 일을 하면 당연히 따라오는 거야.",s:"Dealing with angry customers (주어, 동명사구) + comes with the territory (동사구)\n→ 'come with the territory' = 그 일에 당연히 따라오다 (관용구)\n→ Dealing with ~ = ~을 다루는 것 (동명사 주어)"}
    ]},
+  {w:"text",i:"/tɛkst/",p:"v. [I/T]",m:"문자를 보내다, 문자 메시지를 주고받다",c:"text",n:"cf. text message = 문자 메시지; text back = 답장 문자를 보내다; don't text and drive = 운전 중 문자 금지",
+   e:["She texted him to say she'd be late.","Can you text me the address when you get there?"],
+   x:[
+     {k:"그녀는 늦을 것 같다고 그에게 문자를 보냈다.",s:"She (주어) + texted him (동사+간접목적어) + to say she'd be late (목적 부정사구)\n→ text sb = ~에게 문자를 보내다 [타동사]\n→ to say (that) ~ = ~라고 말하기 위해"},
+     {k:"거기 도착하면 주소 문자로 보내줄 수 있어?",s:"Can you text me the address (요청+동사+간접목적어+직접목적어) + when you get there (시간 접속사절)?\n→ text + 사람 + 내용 = ~에게 …을 문자로 보내다\n→ when you get there = 거기 도착하면"}
+   ]},
   {w:"That does it",p:"phr.",m:"(구어) 이제 참을 만큼 참았어, 이제 끝이야 — 인내가 바닥났을 때",c:"that-does-it",
    e:["That does it! I'm calling the manager right now.","That does it — I'm never coming back to this restaurant again."],
    x:[
@@ -2924,6 +3358,18 @@ const V = [
    x:[
      {k:"나는 항상 10분 일찍 도착해 — 그냥 내 스타일이 그래.",s:"I always show up ten minutes early (주절) — that's just how I roll (설명절)\n→ 'That's how I roll' = 그게 내 방식이야, 나는 원래 이렇게 해\n→ show up = 나타나다, 도착하다"},
      {k:"나는 모든 걸 처음부터 직접 만들어. 그게 내 스타일이야.",s:"I cook everything from scratch (주절). That's how I roll (마무리 표현)\n→ from scratch = 처음부터, 밑바닥부터\n→ 'That's how I roll' = 자신의 방식·스타일을 자신 있게 표현하는 관용구"}
+   ]},
+  {w:"(Let) the cat out of the bag",p:"idiom",m:"(비밀을) 무심코 누설하다, 실수로 발설하다",c:"let-the-cat-out-of-the-bag",n:"cf. spill the beans (비밀을 발설하다)와 유사; 비밀이 새어 나간 후에는 되돌릴 수 없다는 뉘앙스",
+   e:["She let the cat out of the bag when she mentioned the surprise party.","He accidentally let the cat out of the bag about their engagement."],
+   x:[
+     {k:"그녀는 깜짝 파티를 언급하다가 비밀을 누설해버렸다.",s:"She (주어) + let the cat out of the bag (동사구, 관용구) + when she mentioned the surprise party (시간 접속사절)\n→ 'let the cat out of the bag' = 비밀을 (실수로) 누설하다\n→ when she mentioned ~ = ~을 언급했을 때"},
+     {k:"그는 실수로 그들의 약혼 소식을 발설해버렸다.",s:"He (주어) + accidentally let the cat out of the bag (부사+관용구 동사) + about their engagement (전치사구)\n→ accidentally = 실수로, 우연히\n→ about their engagement = 그들의 약혼에 대해"}
+   ]},
+  {w:"the needy",p:"n. [plural]",m:"가난한 사람들, 도움이 필요한 사람들 (= the poor, the underprivileged)",c:"needy",n:"cf. needy (adj. 가난한, 궁핍한); the + adj. = 특정 집단 전체를 가리키는 표현 (the elderly, the homeless 등)",
+   e:["The charity collects donations for the needy during the holiday season.","We have a moral responsibility to help the needy."],
+   x:[
+     {k:"그 자선단체는 명절 시즌에 가난한 사람들을 위해 기부금을 모금한다.",s:"The charity (주어) + collects donations (동사+목적어) + for the needy (전치사구) + during the holiday season (시간 전치사구)\n→ the needy = 가난한 사람들, 도움이 필요한 사람들 (the+형용사 = 복수 명사)\n→ collect donations = 기부금을 모금하다"},
+     {k:"우리는 가난한 사람들을 도울 도덕적 책임이 있다.",s:"We (주어) + have (동사) + a moral responsibility (목적어) + to help the needy (to부정사, 책임의 내용)\n→ moral responsibility = 도덕적 책임\n→ to help the needy = 가난한 사람들을 돕는 것 (to부정사, 명사 수식)"}
    ]},
   {w:"thermostat",i:"/ˈθɜːrməstæt/",p:"n. [C]",m:"온도조절기, 서모스탯",c:"thermostat",
    e:["Turn the thermostat up — it's freezing in here.","The thermostat is set to 22 degrees."],
@@ -2966,6 +3412,12 @@ const V = [
    x:[
      {k:"그 장면은 선정적인 내용 때문에 잘렸다.",s:"The scene (주어) + was cut (수동태) + because of titty content (이유 전치사구)\n→ be cut = 잘리다, 삭제되다 (수동)\n→ because of ~ = ~ 때문에"},
      {k:"그는 직장에서 가슴 드립을 쳤다가 뺨을 얻어맞았다.",s:"He (주어) + got slapped (수동태 구어) + for making a titty joke (이유 전치사구) + at work (장소)\n→ get slapped = 뺨을 맞다\n→ for V-ing = ~한 이유로"}
+   ]},
+  {w:"to date",p:"phr.",m:"지금까지, 현재까지 (= so far, up to now)",c:"to-date",n:"cf. up to date (최신의, 최신 정보를 갖춘); out of date (구식의); date (날짜; 기간)",
+   e:["To date, no cure for the disease has been found.","This is the most successful project we've completed to date."],
+   x:[
+     {k:"지금까지 그 병의 치료법은 발견되지 않았다.",s:"To date (부사구, 문두) + no cure for the disease (주어) + has been found (현재완료 수동)\n→ to date = 지금까지, 현재까지 (부사구)\n→ has been found = 발견되어 있다 (현재완료 수동)"},
+     {k:"이것은 지금까지 우리가 완료한 것 중 가장 성공적인 프로젝트야.",s:"This (주어) + is (동사) + the most successful project (최상급+명사) + we've completed (관계절) + to date (부사구)\n→ the most successful = 가장 성공적인 (최상급)\n→ to date = 지금까지 (부사구, 최상급과 함께 자주 사용)"}
    ]},
   {w:"to make a long story short",p:"phr.",m:"간단히 말하자면, 요약하자면",c:"long-story-short",
    e:["To make a long story short, I quit my job and moved abroad.","She explained the whole situation, but to make a long story short, they broke up."],
@@ -3015,6 +3467,12 @@ const V = [
      {k:"위험한 도로는 블랙아이스로 덮여 있었다.",s:"The treacherous roads (주어) + were covered (수동태) + in black ice (전치사구)\n→ treacherous = 위험한, 믿을 수 없는\n→ be covered in ~ = ~으로 덮여 있다"},
      {k:"그는 파트너 몰래 배신적인 거래를 했다.",s:"He (주어) + made a treacherous deal (동사+목적어) + behind his partner's back (전치사구)\n→ treacherous deal = 배신적인 거래\n→ behind one's back = 몰래, 등 뒤에서"}
    ]},
+  {w:"tremendous",i:"/trɪˈmɛndəs/",p:"adj.",m:"엄청난, 거대한; 훌륭한, 굉장한",c:"tremendous",n:"= enormous, immense, colossal (크기·양); = wonderful, excellent (품질); tremendously (adv.) = 엄청나게",
+   e:["The earthquake caused tremendous damage to the city.","She made a tremendous effort to finish the project on time."],
+   x:[
+     {k:"지진은 도시에 엄청난 피해를 입혔다.",s:"The earthquake (주어) + caused (동사) + tremendous damage (목적어) + to the city (전치사구)\n→ tremendous damage = 엄청난 피해 (tremendous = 엄청난)\n→ cause damage to ~ = ~에 피해를 입히다"},
+     {k:"그녀는 프로젝트를 제때 끝내기 위해 엄청난 노력을 기울였다.",s:"She (주어) + made a tremendous effort (동사구) + to finish the project on time (to부정사, 목적)\n→ make an effort = 노력을 기울이다\n→ on time = 제때, 기한 내에"}
+   ]},
   {w:"trespass",i:"/ˈtrɛspəs/",p:"v. [I]",m:"무단침입하다",c:"trespass",
    e:["You are trespassing on private land — please leave immediately.","They trespassed onto the abandoned factory grounds."],
    x:[
@@ -3026,6 +3484,12 @@ const V = [
    x:[
      {k:"피고인은 다음 달 재판을 받게 된다.",s:"The defendant (주어) + will stand trial (동사구) + next month (시간 부사)\n→ stand trial = 재판을 받다\n→ defendant = 피고인 (형사 사건)"},
      {k:"공식을 제대로 맞추는 데 여러 번의 시도가 필요했다.",s:"It took several trials (가주어+동사+목적어) + before they got the formula right (부사절)\n→ trial = 시험, 시도 (복수: trials)\n→ get ~ right = ~을 제대로 해내다"}
+   ]},
+  {w:"trimester",i:"/ˈtraɪmɛstər/",p:"n. [C]",m:"(임신) 3개월 기간, 임신 3분기; (학기) 3학기제의 한 학기",c:"trimester",n:"cf. first/second/third trimester = 임신 1기(1~3개월)/2기(4~6개월)/3기(7~9개월); semester = 2학기제; quarter = 4학기제",
+   e:["Morning sickness usually improves after the first trimester.","The school year is divided into three trimesters."],
+   x:[
+     {k:"입덧은 보통 임신 1기가 지나면 나아진다.",s:"Morning sickness (주어) + usually improves (동사+부사) + after the first trimester (시간 전치사구)\n→ morning sickness = 입덧 (임신 초기 구역질)\n→ after the first trimester = 임신 1기 이후에 (1~3개월)"},
+     {k:"학년은 세 개의 학기로 나뉜다.",s:"The school year (주어) + is divided (수동태) + into three trimesters (전치사구)\n→ be divided into ~ = ~으로 나뉘다 (수동)\n→ trimester = 3분기 중 한 학기 (학사 일정)"}
    ]},
   {w:"truce",i:"/truːs/",p:"n. [C]",m:"휴전, 정전; (일시적) 갈등 중단",c:"truce",
    e:["The two sides agreed to a truce after months of fighting.","Can we call a truce and stop arguing for one day?"],
@@ -3082,6 +3546,12 @@ const V = [
      {k:"배심원단은 만장일치로 유죄 평결에 이르렀다.",s:"The jury (주어) + reached a unanimous verdict (동사+목적어) + of guilty (전치사구)\n→ reach a verdict = 평결에 이르다, 판결을 내리다\n→ unanimous verdict = 만장일치 평결"},
      {k:"확장 결정이 만장일치로 이루어진 건 아니었어 — 세 명이 반대표를 던졌거든.",s:"The decision to expand (주어) + was not unanimous (동사+부정+형용사) — three members voted against (설명)\n→ unanimous = 만장일치의 (모두가 동의한)\n→ vote against = 반대표를 던지다"}
    ]},
+  {w:"unfair advantage",p:"n. [C]",m:"불공정한 이점, 부당한 우위; 공평하지 않은 유리한 조건",c:"unfair",n:"cf. unfair (adj. 불공정한); take unfair advantage of ~ = ~를 부당하게 이용하다; level the playing field = 조건을 공평하게 만들다",
+   e:["Using AI to write your entire essay gives you an unfair advantage over other students.","Some argued the tax breaks gave large corporations an unfair advantage."],
+   x:[
+     {k:"AI로 에세이 전체를 쓰는 건 다른 학생들에 비해 불공정한 이점을 갖는 거야.",s:"Using AI to write your entire essay (주어, 동명사구) + gives you (동사+간접목적어) + an unfair advantage over other students (직접목적어)\n→ give sb an unfair advantage = ~에게 불공정한 이점을 주다\n→ over other students = 다른 학생들에 비해"},
+     {k:"일부는 세금 감면이 대기업들에게 불공정한 우위를 준다고 주장했다.",s:"Some (주어) + argued (동사) + the tax breaks gave large corporations an unfair advantage (that절, 목적어)\n→ argue (that) ~ = ~라고 주장하다\n→ tax breaks = 세금 감면 혜택"}
+   ]},
   {w:"unfold",i:"/ʌnˈfoʊld/",p:"v. [I/T]",m:"펼쳐지다; (사건이) 전개되다; 펼치다",c:"unfold",
    e:["She watched the events unfold on the news.","The map unfolded to reveal the entire continent."],
    x:[
@@ -3130,6 +3600,12 @@ const V = [
    x:[
      {k:"복수심에 불타는 악당은 자신에게 해를 끼친 모든 사람을 파멸시키겠다고 맹세했다.",s:"The vengeful villain (주어) + vowed (동사) + to destroy everyone (to부정사+목적어) + who had wronged him (관계절)\n→ vengeful = 복수심에 불타는\n→ vow to V = ~하겠다고 맹세하다\n→ wrong sb = ~에게 잘못을 행하다, 해를 끼치다"},
      {k:"그녀는 가장 친한 친구에게 배신당한 후 복수심을 느꼈다.",s:"She (주어) + was feeling vengeful (과거진행+형용사) + after being betrayed (접속사+수동 동명사) + by her best friend (행위자 전치사구)\n→ vengeful = 앙갚음하고 싶은, 보복하려는\n→ after being betrayed = 배신당한 후에 (수동 동명사)"}
+   ]},
+  {w:"verify",i:"/ˈvɛrɪfaɪ/",p:"v. [T]",m:"확인하다, 검증하다; 사실임을 증명하다",c:"verify",n:"cf. verification (n. 확인, 검증); verified (확인된, 공식 인증된); cf. certify (증명하다); authenticate (진품임을 증명하다)",
+   e:["Can you verify that the information is correct before we publish?","The police verified his alibi through security footage."],
+   x:[
+     {k:"게재하기 전에 정보가 맞는지 확인해줄 수 있어?",s:"Can you verify (요청 의문문+동사) + that the information is correct (that절) + before we publish (시간 부사절)?\n→ verify = 확인하다, 검증하다 [타동사]\n→ before we publish = 게재하기 전에"},
+     {k:"경찰은 보안 카메라 영상을 통해 그의 알리바이를 확인했다.",s:"The police (주어) + verified (동사) + his alibi (목적어) + through security footage (수단 전치사구)\n→ verify an alibi = 알리바이를 확인하다\n→ security footage = 보안 카메라 영상 (= CCTV footage)"}
    ]},
   {w:"vicious",i:"/ˈvɪʃəs/",p:"adj.",m:"잔인한, 사나운, 악의적인",c:"vicious",n:"cf. vicious cycle (악순환)",
    e:["The dog launched a vicious attack on the postman.","She sent him a vicious message after the breakup."],
@@ -3263,6 +3739,12 @@ const V = [
    x:[
      {k:"그녀는 지루한 주제도 생동감 있게 만들 수 있는 뛰어난 문장가다.",s:"She's a skilled wordsmith (주어+동사+보어) + who can make even dull topics come alive (관계절)\n→ wordsmith = 언어를 능숙하게 다루는 사람, 문장가\n→ 'make + 목적어 + 동사원형' = ~를 …하게 만들다"},
      {k:"그 연설문은 재능 있는 문장가가 작성했다.",s:"The speech (주어) + was written (수동태) + by a talented wordsmith (행위자 전치사구)\n→ be written by ~ = ~에 의해 쓰이다 (수동)\n→ talented = 재능 있는"}
+   ]},
+  {w:"work at sth",p:"phrv. [T]",m:"~을 꾸준히 노력하다, ~을 갈고닦다 (기술·관계 등을 지속적으로 개선하려고 노력하다)",c:"work-at",n:"cf. work on sth = ~에 공을 들이다; work hard at ~ = ~에 열심히 노력하다",
+   e:["You need to work at your pronunciation if you want to sound fluent.","A good relationship takes effort — you have to work at it."],
+   x:[
+     {k:"유창하게 들리고 싶다면 발음을 계속 연습해야 해.",s:"You need to work at your pronunciation (동사구+목적어) + if you want to sound fluent (조건 부사절)\n→ work at ~ = ~을 꾸준히 노력하다, 연습하다\n→ sound fluent = 유창하게 들리다"},
+     {k:"좋은 관계는 노력이 필요해 — 계속 갈고닦아야 해.",s:"A good relationship (주어) + takes effort (동사+목적어) — you have to work at it (주어+동사구)\n→ take effort = 노력이 필요하다\n→ work at it = 그것을 위해 계속 노력하다"}
    ]},
   {w:"work (sth) out",p:"phrv.",m:"(문제를) 해결하다; (세부 사항을) 결정하다; 운동하다; (계획이) 잘 되다",c:"work-out",
    e:["We need to work out the details before we sign the contract.","Don't worry — things will work out in the end."],
@@ -3466,6 +3948,199 @@ render(V);
       if(ans.style.display === 'none') quizReveal();
       else quizNext();
     }
+  });
+})();
+
+// ── Listen (랜덤 연속 읽기) ────────────────────────────────────────────────────
+(function(){
+  let deck = [], idx = 0, isPlaying = false, timer = null, spd = 1.0;
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [a[i],a[j]]=[a[j],a[i]]; }
+    return a;
+  }
+
+  function speakEn(text, rate, onDone){
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = 'en-US'; utt.rate = rate;
+    utt.onend = () => { if(onDone) onDone(); };
+    utt.onerror = () => { if(onDone) onDone(); };
+    window.speechSynthesis.speak(utt);
+  }
+
+  function speakKo(text, onDone){
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = 'ko-KR'; utt.rate = 0.92 * spd;
+    utt.onend = () => { if(onDone) onDone(); };
+    utt.onerror = () => { if(onDone) onDone(); };
+    window.speechSynthesis.speak(utt);
+  }
+
+  function wait(ms, fn){
+    timer = setTimeout(fn, ms);
+  }
+
+  function clearTimer(){
+    if(timer){ clearTimeout(timer); timer = null; }
+  }
+
+  // exArr: English sentences, xArr: {k, s} objects (Korean translations)
+  function speakExamplesSequentially(exArr, xArr, i, ul, onAllDone){
+    if(!isPlaying) return;
+    if(i >= exArr.length){ wait(1600, () => { if(isPlaying) onAllDone(); }); return; }
+
+    // English example
+    const li = document.createElement('li');
+    li.className = 'li-ex speaking';
+    li.innerHTML = `<span style="color:#10b981;font-weight:700;flex-shrink:0">›</span>&nbsp;${exArr[i]}`;
+    ul.appendChild(li);
+    li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    speakEn(exArr[i], 0.85 * spd, () => {
+      if(!isPlaying) return;
+      li.classList.remove('speaking');
+
+      // Korean translation (if available)
+      const koText = xArr && xArr[i] ? xArr[i].k : null;
+      if(koText){
+        wait(250, () => {
+          if(!isPlaying) return;
+          // Show Korean text under the English
+          const koSpan = document.createElement('div');
+          koSpan.style.cssText = 'font-size:.82rem;color:#1e40af;margin:4px 0 2px 16px;font-weight:600;opacity:0;transition:opacity .3s;';
+          koSpan.textContent = koText;
+          li.appendChild(koSpan);
+          requestAnimationFrame(() => koSpan.style.opacity = '1');
+          li.classList.add('speaking');
+          speakKo(koText, () => {
+            if(!isPlaying) return;
+            li.classList.remove('speaking');
+            wait(350, () => speakExamplesSequentially(exArr, xArr, i + 1, ul, onAllDone));
+          });
+        });
+      } else {
+        wait(400, () => speakExamplesSequentially(exArr, xArr, i + 1, ul, onAllDone));
+      }
+    });
+  }
+
+  function showAndPlay(){
+    const e = deck[idx];
+
+    // Update UI
+    document.getElementById('li-word').textContent = e.w;
+    document.getElementById('li-ipa').textContent = e.i || '';
+    document.getElementById('li-pos').textContent = e.p;
+    const mEl = document.getElementById('li-meaning');
+    mEl.textContent = '';
+    mEl.style.opacity = '0';
+    document.getElementById('li-examples').innerHTML = '';
+
+    // Progress bar
+    const pct = Math.round((idx / deck.length) * 100);
+    document.getElementById('li-prog-bar').style.width = pct + '%';
+    document.getElementById('li-counter').textContent = (idx + 1) + ' / ' + deck.length;
+
+    if(!isPlaying) return;
+
+    // 1. 영어 단어 발음
+    speakEn(e.w, 0.78 * spd, () => {
+      if(!isPlaying) return;
+      // 2. 한글 뜻 표시 + 읽기
+      wait(500, () => {
+        if(!isPlaying) return;
+        mEl.textContent = e.m;
+        mEl.style.opacity = '1';
+        speakKo(e.m, () => {
+          if(!isPlaying) return;
+          // 3. 예문 순서대로 영어 → 한글 번갈아 읽기
+          const ul = document.getElementById('li-examples');
+          const examples = e.e || [];
+          if(examples.length === 0){
+            wait(1200, () => { if(isPlaying) advance(); });
+            return;
+          }
+          wait(400, () => {
+            speakExamplesSequentially(examples, e.x || [], 0, ul, advance);
+          });
+        });
+      });
+    });
+  }
+
+  function advance(){
+    clearTimer();
+    idx = (idx + 1) % deck.length;
+    if(idx === 0) deck = shuffle(V);
+    showAndPlay();
+  }
+
+  window.listenOpen = function(){
+    deck = shuffle(V); idx = 0; isPlaying = true;
+    document.getElementById('listen-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    updateBtn();
+    showAndPlay();
+  };
+
+  window.listenClose = function(){
+    isPlaying = false; clearTimer();
+    window.speechSynthesis && window.speechSynthesis.cancel();
+    document.getElementById('listen-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  window.listenToggle = function(){
+    isPlaying = !isPlaying;
+    updateBtn();
+    if(isPlaying){
+      showAndPlay();
+    } else {
+      clearTimer();
+      window.speechSynthesis && window.speechSynthesis.cancel();
+    }
+  };
+
+  window.listenNext = function(){
+    clearTimer();
+    window.speechSynthesis && window.speechSynthesis.cancel();
+    idx = (idx + 1) % deck.length;
+    if(idx === 0) deck = shuffle(V);
+    showAndPlay();
+  };
+
+  window.listenPrev = function(){
+    clearTimer();
+    window.speechSynthesis && window.speechSynthesis.cancel();
+    idx = (idx - 1 + deck.length) % deck.length;
+    showAndPlay();
+  };
+
+  window.listenSpeed = function(s){
+    spd = parseFloat(s);
+    document.querySelectorAll('.li-speed-btn').forEach(b => {
+      b.classList.toggle('active', parseFloat(b.dataset.s) === spd);
+    });
+  };
+
+  function updateBtn(){
+    const btn = document.getElementById('li-play-btn');
+    if(btn) btn.textContent = isPlaying ? '⏸ 일시정지' : '▶ 재생';
+  }
+
+  document.getElementById('listen-overlay').addEventListener('click', function(e){
+    if(e.target === this) listenClose();
+  });
+
+  document.addEventListener('keydown', function(e){
+    if(!document.getElementById('listen-overlay').classList.contains('open')) return;
+    if(e.key === 'Escape'){ listenClose(); return; }
+    if(e.key === ' '){ e.preventDefault(); listenToggle(); return; }
+    if(e.key === 'ArrowRight'){ e.preventDefault(); listenNext(); return; }
+    if(e.key === 'ArrowLeft'){ e.preventDefault(); listenPrev(); return; }
   });
 })();
 </script>
